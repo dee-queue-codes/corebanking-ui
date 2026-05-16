@@ -1,0 +1,238 @@
+import { LayoutDashboard, Receipt, CheckSquare, Users, UserCog, FileText, Calculator, Settings, Package, ChevronLeft, ChevronRight, CreditCard } from 'lucide-react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { ROUTES } from '@/router/routes'
+
+interface SidebarProps {
+  collapsed?: boolean
+  onToggle?: () => void
+}
+
+const routeMap: Record<string, string> = {
+  dashboard:        ROUTES.DASHBOARD,
+  transactions:     ROUTES.TRANSACTIONS,
+  tasks:            ROUTES.TASKS,
+  clients:          ROUTES.CLIENTS.LIST,
+  'account':        ROUTES.CLIENTS.ACCOUNT_LOOKUP,
+  products:         ROUTES.PRODUCTS.LIST,
+  administrations:  ROUTES.ADMINISTRATION.ROOT,
+  reports:          ROUTES.REPORTS.ROOT,
+  accounting:       ROUTES.ACCOUNTING.ROOT,
+  settings:         ROUTES.SETTINGS,
+}
+
+function getActiveId(pathname: string): string {
+  if (pathname === '/') return 'dashboard'
+  if (pathname === '/clients/account-lookup') return 'account'
+  if (pathname.startsWith('/clients'))        return 'clients'
+  if (pathname.startsWith('/products'))       return 'products'
+  if (pathname.startsWith('/administration')) return 'administrations'
+  if (pathname.startsWith('/reports'))        return 'reports'
+  if (pathname.startsWith('/accounting'))     return 'accounting'
+  if (pathname.startsWith('/transactions'))   return 'transactions'
+  if (pathname.startsWith('/tasks'))          return 'tasks'
+  if (pathname.startsWith('/settings'))       return 'settings'
+  return 'dashboard'
+}
+
+interface NavItemProps {
+  id: string
+  icon: React.ReactNode
+  label: string
+  active: boolean
+  disabled?: boolean
+  collapsed: boolean
+  onClick: () => void
+}
+
+function NavItem({ id, icon, label, active, disabled = false, collapsed, onClick }: NavItemProps) {
+  return (
+    <div style={{ position: 'relative' }}>
+      {active && (
+        <span style={{
+          position: 'absolute', left: 0, top: 6, bottom: 6,
+          width: 3, background: '#fff', borderRadius: '0 2px 2px 0',
+        }} />
+      )}
+      <button
+        key={id}
+        disabled={disabled}
+        onClick={onClick}
+        title={label}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center',
+          gap: 10, padding: '9px 12px', borderRadius: 8, border: 'none',
+          fontSize: 13, fontFamily: "'DM Sans', sans-serif",
+          fontWeight: active ? 600 : 400,
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          background: active ? 'rgba(255,255,255,0.15)' : 'transparent',
+          color: active ? '#fff' : disabled ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.55)',
+          transition: 'background 0.15s, color 0.15s',
+          textAlign: 'left',
+        }}
+        onMouseEnter={e => {
+          if (!disabled && !active) {
+            e.currentTarget.style.background = 'rgba(255,255,255,0.08)'
+            e.currentTarget.style.color = 'rgba(255,255,255,0.85)'
+          }
+        }}
+        onMouseLeave={e => {
+          if (!disabled && !active) {
+            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.color = 'rgba(255,255,255,0.55)'
+          }
+        }}
+      >
+        <span style={{ width: 16, height: 16, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {icon}
+        </span>
+        {!collapsed && (
+          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {label}
+          </span>
+        )}
+      </button>
+    </div>
+  )
+}
+
+
+export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
+  const navigate  = useNavigate()
+  const location  = useLocation()
+  const activeKey = getActiveId(location.pathname)
+
+  const nav = (id: string, icon: React.ReactNode, label: string, disabled = false) => (
+    <NavItem
+      key={id} id={id} icon={icon} label={label}
+      active={activeKey === id} disabled={disabled}
+      collapsed={collapsed}
+      onClick={() => { if (!disabled && routeMap[id]) navigate(routeMap[id]) }}
+    />
+  )
+
+  return (
+    <div style={{
+      width: collapsed ? 64 : 220,
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      flexShrink: 0,
+      transition: 'width 0.3s',
+      background: 'linear-gradient(135deg, #001844 0%, #002663 60%, #1a4080 100%)',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Dot texture — same as hero */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0)',
+        backgroundSize: '20px 20px',
+      }} />
+
+      {/* Logo */}
+      <div style={{
+        height: 60, borderBottom: '1px solid rgba(255,255,255,0.08)',
+        padding: collapsed ? '0 14px' : '0 16px',
+        display: 'flex', alignItems: 'center', gap: 10,
+        flexShrink: 0, position: 'relative',
+      }}>
+        <div style={{
+          width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+          background: 'rgba(255,255,255,0.15)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <svg width="13" height="13" viewBox="0 0 20 20" fill="none">
+            <path d="M10 2L3 6v6c0 4.5 3 8.5 7 10 4-1.5 7-5.5 7-10V6l-7-4z" fill="white" />
+          </svg>
+        </div>
+        {!collapsed && (
+          <div style={{ minWidth: 0 }}>
+            <p style={{
+              margin: 0, color: '#fff', fontSize: 13, fontWeight: 700,
+              fontFamily: "'Sora', sans-serif", lineHeight: 1.2,
+              letterSpacing: '-0.01em', overflow: 'hidden',
+              textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              Chelsea Bank
+            </p>
+            <p style={{
+              margin: 0, color: 'rgba(255,255,255,0.4)', fontSize: 11,
+              fontFamily: "'DM Sans', sans-serif", lineHeight: 1.4,
+            }}>
+              Head Office
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Navigation */}
+      <div style={{
+        flex: 1, overflowY: 'auto', padding: '16px 10px',
+        display: 'flex', flexDirection: 'column', gap: 20, position: 'relative',
+      }}>
+        <div>
+          {!collapsed && (
+            <p style={{
+              margin: '0 0 6px', padding: '0 4px',
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
+              textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)',
+              fontFamily: "'DM Sans', sans-serif",
+            }}>
+              Main Menu
+            </p>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {nav('dashboard',    <LayoutDashboard style={{ width: 15, height: 15 }} />, 'Dashboard')}
+            {nav('transactions', <Receipt style={{ width: 15, height: 15 }} />,         'Transactions', true)}
+            {nav('tasks',        <CheckSquare style={{ width: 15, height: 15 }} />,     'Tasks',        true)}
+          </div>
+        </div>
+
+        <div>
+          {!collapsed && (
+            <p style={{
+              margin: '0 0 6px', padding: '0 4px',
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
+              textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)',
+              fontFamily: "'DM Sans', sans-serif",
+            }}>
+              Admin
+            </p>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {nav('clients',         <Users style={{ width: 15, height: 15 }} />,      'Clients')}
+            {nav('account',         <CreditCard style={{ width: 15, height: 15 }} />, 'Account')}
+            {nav('products',        <Package style={{ width: 15, height: 15 }} />,    'Products')}
+            {nav('administrations', <UserCog style={{ width: 15, height: 15 }} />,    'Administrations')}
+            {nav('reports',         <FileText style={{ width: 15, height: 15 }} />,   'Reports')}
+            {nav('accounting',      <Calculator style={{ width: 15, height: 15 }} />, 'Accounting')}
+            {nav('settings',        <Settings style={{ width: 15, height: 15 }} />,   'Settings')}
+          </div>
+        </div>
+      </div>
+
+      {/* Collapse toggle */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', padding: 10, flexShrink: 0, position: 'relative' }}>
+        <button
+          onClick={onToggle}
+          title={collapsed ? 'Expand' : 'Collapse sidebar'}
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', gap: 6, padding: 8,
+            borderRadius: 8, border: 'none', background: 'transparent',
+            color: 'rgba(255,255,255,0.35)', fontSize: 12,
+            fontFamily: "'DM Sans', sans-serif",
+            cursor: 'pointer', transition: 'background 0.15s, color 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.35)' }}
+        >
+          {collapsed
+            ? <ChevronRight style={{ width: 15, height: 15 }} />
+            : <><ChevronLeft style={{ width: 15, height: 15 }} /><span>Collapse</span></>
+          }
+        </button>
+      </div>
+    </div>
+  )
+}
