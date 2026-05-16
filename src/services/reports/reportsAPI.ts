@@ -1,0 +1,20 @@
+import { http } from '../http'
+
+type ReportParams = Record<string, string | number | undefined>
+
+export const reportsAPI = {
+  getContributions: (params?: ReportParams) =>
+    http.get('/reports/contributions', { params }),
+  getContributionMembers: (params?: ReportParams) =>
+    http.get('/reports/contributions/members', { params }),
+  getBranchReport: (params?: ReportParams) =>
+    http.get('/reports/branch', { params }),
+  getBranchTransactions: (params?: ReportParams) =>
+    http.get('/reports/branch/transactions', { params }),
+  getAccountReport: (params?: ReportParams) =>
+    http.get('/reports/account', { params }),
+  getAccountTransactions: (params?: ReportParams) =>
+    http.get('/reports/account/transactions', { params }),
+  getAccountDailyBalance: (params?: ReportParams) =>
+    http.get('/reports/account/daily-balance', { params }),
+}
