@@ -1,0 +1,42 @@
+export const ROUTES = {
+  LOGIN: '/login',
+  DASHBOARD: '/',
+  TRANSACTIONS: '/transactions',
+  TASKS: '/tasks',
+  CLIENTS: {
+    ROOT: '/clients',
+    LIST: '/clients',
+    DETAIL: '/clients/:clientId',
+    ADD: '/clients/add',
+    ACCOUNT_LOOKUP: '/clients/account-lookup',
+  },
+  PRODUCTS: {
+    ROOT: '/products',
+    LIST: '/products',
+    PREPAID: '/products/prepaid',
+    PREPAID_NEW: '/products/prepaid/new',
+    LOAN: '/products/loan',
+    SAVINGS: '/products/savings',
+  },
+  ACCOUNTING: {
+    ROOT: '/accounting',
+    CHART: '/accounting/chart-of-accounts',
+    JOURNAL: '/accounting/journal-entries',
+  },
+  ADMINISTRATION: {
+    ROOT: '/administration',
+    USERS: '/administration/users',
+    USERS_ADD: '/administration/users/add',
+    OFFICES: '/administration/offices',
+    SECURITY: '/administration/security',
+    SYSTEM: '/administration/system',
+  },
+  REPORTS: {
+    ROOT: '/reports',
+    TRANSACTIONS: '/reports/transactions',
+    CLIENTS: '/reports/clients',
+    FINANCIAL: '/reports/financial',
+    PERFORMANCE: '/reports/performance',
+  },
+  SETTINGS: '/settings',
+}
