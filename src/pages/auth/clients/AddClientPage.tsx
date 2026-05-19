@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { BackButton } from '@/components/ui/back-button'
 import { ROUTES } from '@/router/routes'
 import { http } from '@/services/http'
+import { clientsAPI } from '@/services/clients/clientsAPI'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -24,7 +25,7 @@ interface PersonalForm {
 
 interface AddressForm {
   addressLine1: string; addressLine2: string
-  city: string; state: string; postalCode: string; country: string
+  city: string; postalCode: string
 }
 
 interface FamilyForm {
@@ -53,7 +54,6 @@ const offices = [
 ]
 const genders    = ['Male', 'Female', 'Other', 'Prefer not to say']
 const docTypes   = ['Ghana Card', 'Passport', 'Voter ID', 'Driver\'s Licence', 'SSNIT Card', 'Birth Certificate']
-const countries  = ['Ghana', 'Nigeria', 'Ivory Coast', 'Togo', 'Benin', 'Burkina Faso']
 const qualLevels = ['None', 'Primary', 'JHS', 'SHS', 'Diploma', 'Degree', 'Postgraduate']
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ export default function AddClientPage() {
   const [personalErrors, setPersonalErrors] = useState<Partial<Record<keyof PersonalForm, string>>>({})
 
   const [address, setAddress] = useState<AddressForm>({
-    addressLine1: '', addressLine2: '', city: '', state: '', postalCode: '', country: 'Ghana',
+    addressLine1: '', addressLine2: '', city: '', postalCode: '',
   })
 
   const [family, setFamily] = useState<FamilyForm>({
@@ -126,7 +126,7 @@ export default function AddClientPage() {
     setSubmitError('')
     setSubmitting(true)
     try {
-      await http.post('/clients', {
+      const res = await http.post('/clients', {
         firstName:       personal.firstName.trim(),
         lastName:        personal.lastName.trim(),
         middleName:      personal.middleName.trim() || undefined,
@@ -139,10 +139,26 @@ export default function AddClientPage() {
         externalId:      personal.externalId.trim() || undefined,
         isStaff:         personal.isStaff,
         submittedOnDate: personal.submittedOnDate,
-        address:         address.addressLine1 ? address : undefined,
         family:          family.spouseFirstName ? family : undefined,
         identity:        identity.documentType  ? identity : undefined,
       })
+
+      // Create residential address separately (backend doesn't accept it in the client body)
+      const clientData = (res.data as Record<string, unknown>)
+      const newClientId = String(
+        (clientData.data as Record<string, unknown>)?.clientId ??
+        (clientData.data as Record<string, unknown>)?.id ??
+        clientData.clientId ?? clientData.id ?? ''
+      )
+      if (address.addressLine1.trim() && newClientId) {
+        await clientsAPI.createAddress(newClientId, {
+          addressLine1: address.addressLine1.trim(),
+          addressLine2: address.addressLine2.trim() || undefined,
+          city:         address.city.trim() || undefined,
+          postalCode:   address.postalCode.trim() || undefined,
+        }, { _skipAuthRedirect: true, params: { addressTypeId: 1 } })
+      }
+
       navigate(ROUTES.CLIENTS.LIST)
     } catch {
       setSubmitError('Failed to create client. Please check your details and try again.')
@@ -258,19 +274,8 @@ export default function AddClientPage() {
         <Field label="City / Town">
           <Input {...aField('city')} placeholder="e.g. Accra" className={inputCls()} />
         </Field>
-        <Field label="State / Region">
-          <Input {...aField('state')} placeholder="e.g. Greater Accra" className={inputCls()} />
-        </Field>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
         <Field label="Postal / Digital Address">
           <Input {...aField('postalCode')} placeholder="e.g. GA-123-4567" className={inputCls()} />
-        </Field>
-        <Field label="Country">
-          <Select value={address.country} onValueChange={v => setAddress(p => ({ ...p, country: v }))}>
-            <SelectTrigger className={inputCls()}><SelectValue /></SelectTrigger>
-            <SelectContent>{countries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
-          </Select>
         </Field>
       </div>
     </div>
