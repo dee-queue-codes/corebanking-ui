@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   FileText,
   Pencil,
@@ -804,6 +804,7 @@ export default function ClientDetailPage() {
   const [createAccountSaving, setCreateAccountSaving] = useState(false);
   const [createAccountError, setCreateAccountError] = useState("");
   const [showAddressDialog, setShowAddressDialog] = useState(false)
+  const pendingAddressTypeId = useRef(ADDRESS_TYPES.residential.id)
   const [showEditAddressDialog, setShowEditAddressDialog] = useState(false)
   const [editAddressForm, setEditAddressForm] = useState({ addressId: '', addressLine1: '', addressLine2: '', city: '', stateProvinceId: '', postalCode: '' })
   const [editAddressSaving, setEditAddressSaving] = useState(false)
@@ -1485,6 +1486,7 @@ export default function ClientDetailPage() {
       setAddError("Address line 1 is required.");
       return;
     }
+    const addressTypeId = pendingAddressTypeId.current;
     setAddSaving(true);
     try {
       const created = await clientsAPI.createAddress(
@@ -1497,12 +1499,30 @@ export default function ClientDetailPage() {
         },
         {
           ...skipAuthRedirect,
-          params: { addressTypeId: Number(addressForm.addressTypeId) },
+          params: { addressTypeId: Number(addressTypeId) },
         },
       );
       const createdAddress = unwrapData(created.data) as AddressItem;
-      rememberAddressType(clientId, createdAddress, addressForm.addressTypeId);
-      await reloadAddresses();
+      const createdId = String(createdAddress.id ?? "");
+
+      // Persist type to localStorage for page-refresh survival
+      rememberAddressType(clientId, createdAddress, addressTypeId);
+
+      // Reload from server, then classify — overriding the new address with known type
+      const freshRes = await clientsAPI.getAddresses(clientId, skipAuthRedirect);
+      const allAddresses = extractCollection(freshRes.data) as AddressItem[];
+      const residential: AddressItem[] = [];
+      const office: AddressItem[] = [];
+      for (const addr of allAddresses) {
+        const knownType = createdId && String(addr.id) === createdId
+          ? addressTypeId
+          : getAddressTypeId(clientId, addr);
+        if (knownType === ADDRESS_TYPES.office.id) office.push(addr);
+        else residential.push(addr);
+      }
+      setResidentialAddresses(residential);
+      setOfficeAddresses(office);
+
       setAddressForm({
         addressTypeId: "1",
         addressLine1: "",
@@ -2237,6 +2257,7 @@ export default function ClientDetailPage() {
                 const type = title.startsWith("Office")
                   ? ADDRESS_TYPES.office
                   : ADDRESS_TYPES.residential;
+                pendingAddressTypeId.current = type.id;
                 setAddError("");
                 setAddressDialogTitle(type.label);
                 setAddressForm((p) => ({ ...p, addressTypeId: type.id }));
