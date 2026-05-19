@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight, RefreshCw, Wallet, TrendingUp, TrendingDown, Activity, Plus, User } from 'lucide-react'
+import { Search, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight, RefreshCw, Wallet, TrendingUp, TrendingDown, Activity, Plus, User, ChevronDown } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import { accountsAPI } from '@/services/clients/accountsAPI'
 import { clientTransactionsAPI } from '@/services/clients/transactionsAPI'
@@ -195,6 +195,7 @@ export default function AccountLookupPage() {
   const [txLoading, setTxLoading]         = useState(false)
   const [txError, setTxError]             = useState('')
   const [entryFilter, setEntryFilter]     = useState<'ALL' | 'CREDIT' | 'DEBIT'>('ALL')
+  const [showActionsDropdown, setShowActionsDropdown] = useState(false)
 
   const [showCreditDialog, setShowCreditDialog]     = useState(false)
   const [showDebitDialog, setShowDebitDialog]       = useState(false)
@@ -722,58 +723,6 @@ export default function AccountLookupPage() {
                       <span style={{ width: 5, height: 5, borderRadius: '50%', background: isActive ? '#34D399' : '#FBBF24' }} />
                       {account.status}
                     </span>
-                    {isActive && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={openCreditDialog}
-                          style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 6,
-                            padding: '6px 14px', borderRadius: 20, border: 'none',
-                            background: 'rgba(16,185,129,0.2)', color: '#A7F3D0',
-                            fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: 600,
-                            cursor: 'pointer', transition: 'background 0.15s',
-                          }}
-                          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(16,185,129,0.3)')}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'rgba(16,185,129,0.2)')}
-                        >
-                          <ArrowDownToLine style={{ width: 12, height: 12 }} />
-                          Credit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={openDebitDialog}
-                          style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 6,
-                            padding: '6px 14px', borderRadius: 20, border: 'none',
-                            background: 'rgba(239,68,68,0.2)', color: '#FECACA',
-                            fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: 600,
-                            cursor: 'pointer', transition: 'background 0.15s',
-                          }}
-                          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.3)')}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.2)')}
-                        >
-                          <ArrowUpFromLine style={{ width: 12, height: 12 }} />
-                          Debit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={openTransferDialog}
-                          style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 6,
-                            padding: '6px 14px', borderRadius: 20, border: 'none',
-                            background: 'rgba(37,99,235,0.28)', color: '#BFDBFE',
-                            fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: 600,
-                            cursor: 'pointer', transition: 'background 0.15s',
-                          }}
-                          onMouseEnter={e => (e.currentTarget.style.background = 'rgba(37,99,235,0.38)')}
-                          onMouseLeave={e => (e.currentTarget.style.background = 'rgba(37,99,235,0.28)')}
-                        >
-                          <ArrowLeftRight style={{ width: 12, height: 12 }} />
-                          Transfer
-                        </button>
-                      </>
-                    )}
                     {isPending && (
                       <button
                         type="button"
@@ -890,15 +839,83 @@ export default function AccountLookupPage() {
           )}
 
           {/* Transactions table */}
-          <div style={{ background: T.surface, borderRadius: 14, border: `1px solid ${T.border}`, boxShadow: T.shadow, overflow: 'hidden' }}>
+          <div style={{ background: T.surface, borderRadius: 14, border: `1px solid ${T.border}`, boxShadow: T.shadow }}>
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 22px', borderBottom: `1px solid ${T.border}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 22px', borderBottom: `1px solid ${T.border}`, borderRadius: '14px 14px 0 0', position: 'relative', zIndex: 10 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 3, height: 16, borderRadius: 2, background: T.navy }} />
                 <span style={{ fontFamily: 'Sora, sans-serif', fontSize: 11, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: T.text }}>
                   Transaction History
                 </span>
               </div>
+
+              {/* Right side: Actions dropdown + filter pills */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+
+              {/* Actions dropdown */}
+              {isActive && (
+                <>
+                  {showActionsDropdown && (
+                    <div onClick={() => setShowActionsDropdown(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+                  )}
+                  <div style={{ position: 'relative', zIndex: 41 }}>
+                    <button
+                      onClick={() => setShowActionsDropdown(p => !p)}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        padding: '6px 14px', borderRadius: 8, border: `1.5px solid ${T.border}`,
+                        background: showActionsDropdown ? T.navy : '#F5F8FE',
+                        color: showActionsDropdown ? '#fff' : T.text,
+                        fontFamily: 'DM Sans, sans-serif', fontSize: 12, fontWeight: 600,
+                        cursor: 'pointer', transition: 'all 0.15s',
+                      }}
+                    >
+                      Actions
+                      <ChevronDown style={{ width: 13, height: 13, transition: 'transform 0.15s', transform: showActionsDropdown ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                    </button>
+                    {showActionsDropdown && (
+                      <div style={{
+                        position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+                        background: T.surface, border: `1px solid ${T.border}`,
+                        borderRadius: 12, boxShadow: '0 8px 28px rgba(0,38,99,0.16)',
+                        minWidth: 200, overflow: 'hidden', padding: '6px 0',
+                      }}>
+                        {[
+                          { label: 'Credit Account', icon: ArrowDownToLine, color: T.success,  bg: T.successBg, action: openCreditDialog  },
+                          { label: 'Debit Account',  icon: ArrowUpFromLine, color: '#DC2626',  bg: '#FEF2F2',   action: openDebitDialog   },
+                          { label: 'Transfer Funds', icon: ArrowLeftRight,  color: '#2563EB',  bg: '#EFF6FF',   action: openTransferDialog },
+                        ].map(({ label, icon: Icon, color, bg, action }, i, arr) => (
+                          <div key={label}>
+                            <button
+                              onClick={() => { action(); setShowActionsDropdown(false) }}
+                              style={{
+                                width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                                padding: '10px 16px', border: 'none', background: 'transparent',
+                                cursor: 'pointer', transition: 'background 0.12s',
+                              }}
+                              onMouseEnter={e => (e.currentTarget.style.background = '#F5F8FE')}
+                              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                            >
+                              <span style={{
+                                width: 32, height: 32, borderRadius: 8, background: bg, flexShrink: 0,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              }}>
+                                <Icon style={{ width: 14, height: 14, color }} />
+                              </span>
+                              <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: 600, color: T.text, whiteSpace: 'nowrap' }}>
+                                {label}
+                              </span>
+                            </button>
+                            {i < arr.length - 1 && (
+                              <div style={{ height: 1, background: T.border, margin: '2px 16px' }} />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
 
               {/* Filter pills */}
               {transactions.length > 0 && (
@@ -929,6 +946,7 @@ export default function AccountLookupPage() {
                   </span>
                 </div>
               )}
+              </div>
             </div>
 
             {txLoading ? (
@@ -944,6 +962,7 @@ export default function AccountLookupPage() {
                 No transactions found
               </p>
             ) : (
+              <div style={{ borderRadius: '0 0 14px 14px', overflow: 'hidden' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ background: '#F5F8FE', borderBottom: `1px solid ${T.border}` }}>
@@ -992,6 +1011,7 @@ export default function AccountLookupPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         </div>
