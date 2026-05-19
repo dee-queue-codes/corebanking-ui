@@ -1490,12 +1490,10 @@ export default function ClientDetailPage() {
       const created = await clientsAPI.createAddress(
         clientId,
         {
-          addressTypeId: Number(addressForm.addressTypeId),
           addressLine1: addressForm.addressLine1.trim(),
-          addressLine2: addressForm.addressLine2.trim(),
-          city: addressForm.city.trim(),
-          stateProvinceId: addressForm.stateProvinceId.trim(),
-          postalCode: addressForm.postalCode.trim(),
+          addressLine2: addressForm.addressLine2.trim() || undefined,
+          city: addressForm.city.trim() || undefined,
+          postalCode: addressForm.postalCode.trim() || undefined,
         },
         {
           ...skipAuthRedirect,
