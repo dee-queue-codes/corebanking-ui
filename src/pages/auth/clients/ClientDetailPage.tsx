@@ -350,13 +350,39 @@ function getApiErrorMessage(error: unknown, fallback: string): string {
         return record.responseMessage;
       const nestedError = record.error;
       if (nestedError && typeof nestedError === "object") {
-        const message = (nestedError as Record<string, unknown>).message;
-        if (typeof message === "string") return message;
+        const ne = nestedError as Record<string, unknown>;
+        // If there are field-level validation details, list them all
+        if (ne.details && typeof ne.details === "object") {
+          const details = ne.details as Record<string, string>;
+          const lines = Object.entries(details).map(([field, msg]) => `• ${field}: ${msg}`);
+          if (lines.length) return lines.join("\n");
+        }
+        if (typeof ne.message === "string") return ne.message;
       }
       if (typeof record.message === "string") return record.message;
     }
   }
   return fallback;
+}
+
+/** Converts "YYYY-MM-DD" (HTML date input) → "dd-MM-YYYY" (API format) */
+function formatDateForApi(date: string): string {
+  if (!date) return date;
+  const parts = date.split("-");
+  if (parts.length === 3 && parts[0].length === 4) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return date;
+}
+
+/** Converts "dd-MM-YYYY" (API format) → "YYYY-MM-DD" (HTML date input) */
+function parseApiDateForInput(date: string): string {
+  if (!date) return date;
+  const parts = date.split("-");
+  if (parts.length === 3 && parts[2].length === 4) {
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return date;
 }
 
 function getAddressType(addr: AddressItem): string {
@@ -806,7 +832,7 @@ export default function ClientDetailPage() {
   const [showAddressDialog, setShowAddressDialog] = useState(false)
   const pendingAddressTypeId = useRef(ADDRESS_TYPES.residential.id)
   const [showEditAddressDialog, setShowEditAddressDialog] = useState(false)
-  const [editAddressForm, setEditAddressForm] = useState({ addressId: '', addressLine1: '', addressLine2: '', city: '', stateProvinceId: '', postalCode: '' })
+  const [editAddressForm, setEditAddressForm] = useState({ addressId: '', addressTypeId: ADDRESS_TYPES.residential.id, addressLine1: '', addressLine2: '', city: '', stateProvinceId: '', postalCode: '' })
   const [editAddressSaving, setEditAddressSaving] = useState(false)
   const [editAddressError, setEditAddressError] = useState('')
   const [addressForm, setAddressForm] = useState({
@@ -1487,9 +1513,17 @@ export default function ClientDetailPage() {
       return;
     }
     const addressTypeId = pendingAddressTypeId.current;
+
+    // Snapshot existing IDs so we can identify the newly created address after reload
+    const existingIds = new Set(
+      [...residentialAddresses, ...officeAddresses]
+        .map((a) => (a.id != null ? String(a.id) : ""))
+        .filter(Boolean),
+    );
+
     setAddSaving(true);
     try {
-      const created = await clientsAPI.createAddress(
+      await clientsAPI.createAddress(
         clientId,
         {
           addressLine1: addressForm.addressLine1.trim(),
@@ -1502,21 +1536,24 @@ export default function ClientDetailPage() {
           params: { addressTypeId: Number(addressTypeId) },
         },
       );
-      const createdAddress = unwrapData(created.data) as AddressItem;
-      const createdId = String(createdAddress.id ?? "");
 
-      // Persist type to localStorage for page-refresh survival
-      rememberAddressType(clientId, createdAddress, addressTypeId);
-
-      // Reload from server, then classify — overriding the new address with known type
+      // Reload from server
       const freshRes = await clientsAPI.getAddresses(clientId, skipAuthRedirect);
       const allAddresses = extractCollection(freshRes.data) as AddressItem[];
+
+      // Find the new address (its ID won't be in our pre-creation snapshot)
+      const newAddr = allAddresses.find(
+        (a) => a.id != null && !existingIds.has(String(a.id)),
+      );
+      if (newAddr) {
+        rememberAddressType(clientId, newAddr, addressTypeId);
+      }
+
       const residential: AddressItem[] = [];
       const office: AddressItem[] = [];
       for (const addr of allAddresses) {
-        const knownType = createdId && String(addr.id) === createdId
-          ? addressTypeId
-          : getAddressTypeId(clientId, addr);
+        const isNew = newAddr != null && addr.id != null && String(addr.id) === String(newAddr.id);
+        const knownType = isNew ? addressTypeId : getAddressTypeId(clientId, addr);
         if (knownType === ADDRESS_TYPES.office.id) office.push(addr);
         else residential.push(addr);
       }
@@ -1551,11 +1588,10 @@ export default function ClientDetailPage() {
       await clientsAPI.updateAddress(clientId, {
         addressId: Number(editAddressForm.addressId),
         addressLine1: editAddressForm.addressLine1.trim(),
-        addressLine2: editAddressForm.addressLine2.trim(),
-        city: editAddressForm.city.trim(),
-        stateProvinceId: editAddressForm.stateProvinceId ? Number(editAddressForm.stateProvinceId) : undefined,
-        postalCode: editAddressForm.postalCode.trim(),
-      }, skipAuthRedirect)
+        addressLine2: editAddressForm.addressLine2.trim() || undefined,
+        city: editAddressForm.city.trim() || undefined,
+        postalCode: editAddressForm.postalCode.trim() || undefined,
+      }, { ...skipAuthRedirect, params: { addressTypeId: Number(editAddressForm.addressTypeId) } })
       await reloadAddresses()
       setShowEditAddressDialog(false)
     } catch (error) {
@@ -1580,6 +1616,17 @@ export default function ClientDetailPage() {
       setEditNoteError(getApiErrorMessage(error, 'Failed to update note.'))
     } finally {
       setEditNoteSaving(false)
+    }
+  }
+
+  const handleDeleteIdentity = async (identityId: string | number) => {
+    if (!clientId) return
+    try {
+      await clientsAPI.deleteIdentity(clientId, identityId, skipAuthRedirect)
+      const res = await clientsAPI.getIdentities(clientId, skipAuthRedirect)
+      setIdentities(extractArray(res.data) as IdentityItem[])
+    } catch (error) {
+      console.error('Failed to delete identity', error)
     }
   }
 
@@ -1619,13 +1666,13 @@ export default function ClientDetailPage() {
         middleName: editFamilyForm.middleName.trim(),
         lastName: editFamilyForm.lastName.trim(),
         relationship: editFamilyForm.relationship.trim(),
-        gender: editFamilyForm.gender.trim(),
+        gender: editFamilyForm.gender.trim().toUpperCase() || undefined,
         age: editFamilyForm.age ? Number(editFamilyForm.age) : undefined,
-        qualification: editFamilyForm.qualification.trim(),
-        profession: editFamilyForm.profession.trim(),
-        maritalStatus: editFamilyForm.maritalStatus.trim(),
-        mobileNumber: editFamilyForm.mobileNumber.trim(),
-        dateOfBirth: editFamilyForm.dateOfBirth || undefined,
+        qualification: editFamilyForm.qualification.trim() || undefined,
+        profession: editFamilyForm.profession.trim() || undefined,
+        maritalStatus: editFamilyForm.maritalStatus.trim() || undefined,
+        mobileNumber: editFamilyForm.mobileNumber.trim() || undefined,
+        dateOfBirth: editFamilyForm.dateOfBirth ? formatDateForApi(editFamilyForm.dateOfBirth) : undefined,
         isDependent: editFamilyForm.isDependent,
       }, skipAuthRedirect)
       const res = await clientsAPI.getFamilyMembers(clientId, skipAuthRedirect)
@@ -1659,13 +1706,13 @@ export default function ClientDetailPage() {
           middleName: familyForm.middleName.trim(),
           lastName: familyForm.lastName.trim(),
           relationship: familyForm.relationship.trim(),
-          gender: familyForm.gender.trim(),
+          gender: familyForm.gender.trim().toUpperCase() || undefined,
           age: familyForm.age ? Number(familyForm.age) : undefined,
-          qualification: familyForm.qualification.trim(),
-          profession: familyForm.profession.trim(),
-          maritalStatus: familyForm.maritalStatus.trim(),
-          mobileNumber: familyForm.mobileNumber.trim(),
-          dateOfBirth: familyForm.dateOfBirth || undefined,
+          qualification: familyForm.qualification.trim() || undefined,
+          profession: familyForm.profession.trim() || undefined,
+          maritalStatus: familyForm.maritalStatus.trim() || undefined,
+          mobileNumber: familyForm.mobileNumber.trim() || undefined,
+          dateOfBirth: familyForm.dateOfBirth ? formatDateForApi(familyForm.dateOfBirth) : undefined,
           isDependent: familyForm.isDependent,
         },
         skipAuthRedirect,
@@ -2355,6 +2402,7 @@ export default function ClientDetailPage() {
                           setEditAddressError('')
                           setEditAddressForm({
                             addressId: String(addr.id ?? ''),
+                            addressTypeId: getAddressTypeId(clientId, addr),
                             addressLine1: addr.addressLine1 ?? '',
                             addressLine2: addr.addressLine2 ?? '',
                             city: addr.city ?? '',
@@ -2666,11 +2714,13 @@ export default function ClientDetailPage() {
                         >
                           <Pencil style={{ width: 13, height: 13, color: T.textMuted }} />
                         </button>
-                        <button style={{
-                          width: 28, height: 28, borderRadius: 7, border: `1px solid ${T.border}`,
-                          background: T.surface, display: 'inline-flex', alignItems: 'center',
-                          justifyContent: 'center', cursor: 'pointer',
-                        }}>
+                        <button
+                          onClick={() => handleDeleteIdentity(identity.id ?? '')}
+                          style={{
+                            width: 28, height: 28, borderRadius: 7, border: `1px solid ${T.border}`,
+                            background: T.surface, display: 'inline-flex', alignItems: 'center',
+                            justifyContent: 'center', cursor: 'pointer',
+                          }}>
                           <Trash2 style={{ width: 13, height: 13, color: '#EF4444' }} />
                         </button>
                       </div>
@@ -2969,13 +3019,13 @@ export default function ClientDetailPage() {
                           middleName: m.middleName ?? '',
                           lastName: m.lastName ?? '',
                           relationship: m.relationship ?? '',
-                          gender: m.gender ?? '',
+                          gender: (m.gender ?? '').toUpperCase(),
                           age: m.age != null ? String(m.age) : '',
                           qualification: m.qualification ?? '',
-                          profession: m.profession ?? '',
-                          maritalStatus: m.maritalStatus ?? '',
+                          profession: (m.profession ?? '').toLowerCase(),
+                          maritalStatus: (m.maritalStatus ?? '').toUpperCase(),
                           mobileNumber: m.mobileNumber ?? '',
-                          dateOfBirth: m.dateOfBirth ?? '',
+                          dateOfBirth: parseApiDateForInput(m.dateOfBirth ?? ''),
                           isDependent: !!m.isDependent,
                         })
                         setShowEditFamilyDialog(true)
@@ -3770,10 +3820,7 @@ export default function ClientDetailPage() {
           <form onSubmit={handleUpdateAddress} className="space-y-4">
             <Input placeholder="Address line 1 *" value={editAddressForm.addressLine1} onChange={e => setEditAddressForm(p => ({ ...p, addressLine1: e.target.value }))} className="bg-gray-50 border-gray-300" />
             <Input placeholder="Address line 2" value={editAddressForm.addressLine2} onChange={e => setEditAddressForm(p => ({ ...p, addressLine2: e.target.value }))} className="bg-gray-50 border-gray-300" />
-            <div className="grid grid-cols-2 gap-4">
-              <Input placeholder="City" value={editAddressForm.city} onChange={e => setEditAddressForm(p => ({ ...p, city: e.target.value }))} className="bg-gray-50 border-gray-300" />
-              <Input placeholder="State/Province" value={editAddressForm.stateProvinceId} onChange={e => setEditAddressForm(p => ({ ...p, stateProvinceId: e.target.value }))} className="bg-gray-50 border-gray-300" />
-            </div>
+            <Input placeholder="City" value={editAddressForm.city} onChange={e => setEditAddressForm(p => ({ ...p, city: e.target.value }))} className="bg-gray-50 border-gray-300" />
             <Input placeholder="Postal code" value={editAddressForm.postalCode} onChange={e => setEditAddressForm(p => ({ ...p, postalCode: e.target.value }))} className="bg-gray-50 border-gray-300" />
             {editAddressError && <p className="text-sm text-red-600">{editAddressError}</p>}
             <DialogFooter>
@@ -3866,11 +3913,26 @@ export default function ClientDetailPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <Input placeholder="Relationship" value={editFamilyForm.relationship} onChange={(e) => setEditFamilyForm(p => ({ ...p, relationship: e.target.value }))} className="bg-gray-50 border-gray-300" />
-              <Input placeholder="Gender" value={editFamilyForm.gender} onChange={(e) => setEditFamilyForm(p => ({ ...p, gender: e.target.value }))} className="bg-gray-50 border-gray-300" />
+              <select value={editFamilyForm.gender} onChange={(e) => setEditFamilyForm(p => ({ ...p, gender: e.target.value }))} style={{ height: 36, borderRadius: 6, border: '1px solid #D1D5DB', background: '#F9FAFB', padding: '0 10px', fontSize: 14, width: '100%' }}>
+                <option value="" disabled>Select gender</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+                <option value="OTHER">Other</option>
+                <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
+                <option value="UNSPECIFIED">Unspecified</option>
+              </select>
               <Input placeholder="Age" type="number" value={editFamilyForm.age} onChange={(e) => setEditFamilyForm(p => ({ ...p, age: e.target.value }))} className="bg-gray-50 border-gray-300" />
               <Input placeholder="Qualification" value={editFamilyForm.qualification} onChange={(e) => setEditFamilyForm(p => ({ ...p, qualification: e.target.value }))} className="bg-gray-50 border-gray-300" />
-              <Input placeholder="Profession" value={editFamilyForm.profession} onChange={(e) => setEditFamilyForm(p => ({ ...p, profession: e.target.value }))} className="bg-gray-50 border-gray-300" />
-              <Input placeholder="Marital status" value={editFamilyForm.maritalStatus} onChange={(e) => setEditFamilyForm(p => ({ ...p, maritalStatus: e.target.value }))} className="bg-gray-50 border-gray-300" />
+              <select value={editFamilyForm.profession} onChange={(e) => setEditFamilyForm(p => ({ ...p, profession: e.target.value }))} style={{ height: 36, borderRadius: 6, border: '1px solid #D1D5DB', background: '#F9FAFB', padding: '0 10px', fontSize: 14, width: '100%' }}>
+                <option value="" disabled>Profession</option>
+                <option value="employed">Employed</option>
+                <option value="entreprenuer">Entrepreneur</option>
+              </select>
+              <select value={editFamilyForm.maritalStatus} onChange={(e) => setEditFamilyForm(p => ({ ...p, maritalStatus: e.target.value }))} style={{ height: 36, borderRadius: 6, border: '1px solid #D1D5DB', background: '#F9FAFB', padding: '0 10px', fontSize: 14, width: '100%' }}>
+                <option value="" disabled>Marital status</option>
+                <option value="SINGLE">Single</option>
+                <option value="MARRIED">Married</option>
+              </select>
               <Input placeholder="Mobile number" value={editFamilyForm.mobileNumber} onChange={(e) => setEditFamilyForm(p => ({ ...p, mobileNumber: e.target.value }))} className="bg-gray-50 border-gray-300" />
               <div>
                 <Label className="text-xs text-gray-500 mb-1 block">Date of Birth</Label>
@@ -3881,7 +3943,9 @@ export default function ClientDetailPage() {
               <Checkbox id="editDependent" checked={editFamilyForm.isDependent} onCheckedChange={(v) => setEditFamilyForm(p => ({ ...p, isDependent: !!v }))} />
               <Label htmlFor="editDependent" className="text-sm text-gray-700 cursor-pointer">Dependent</Label>
             </div>
-            {editFamilyError && <p className="text-sm text-red-600">{editFamilyError}</p>}
+            {editFamilyError && (
+              <div className="text-sm text-red-600 whitespace-pre-line">{editFamilyError}</div>
+            )}
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowEditFamilyDialog(false)} disabled={editFamilySaving}>Cancel</Button>
               <Button type="submit" className="text-white" style={{ backgroundColor: T.navy }} disabled={editFamilySaving}>
@@ -3941,27 +4005,14 @@ export default function ClientDetailPage() {
               }
               className="bg-gray-50 border-gray-300"
             />
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                placeholder="City"
-                value={addressForm.city}
-                onChange={(e) =>
-                  setAddressForm((p) => ({ ...p, city: e.target.value }))
-                }
-                className="bg-gray-50 border-gray-300"
-              />
-              <Input
-                placeholder="State/Province"
-                value={addressForm.stateProvinceId}
-                onChange={(e) =>
-                  setAddressForm((p) => ({
-                    ...p,
-                    stateProvinceId: e.target.value,
-                  }))
-                }
-                className="bg-gray-50 border-gray-300"
-              />
-            </div>
+            <Input
+              placeholder="City"
+              value={addressForm.city}
+              onChange={(e) =>
+                setAddressForm((p) => ({ ...p, city: e.target.value }))
+              }
+              className="bg-gray-50 border-gray-300"
+            />
             <Input
               placeholder="Postal code"
               value={addressForm.postalCode}
@@ -3970,7 +4021,7 @@ export default function ClientDetailPage() {
               }
               className="bg-gray-50 border-gray-300"
             />
-            {addError && <p className="text-sm text-red-600">{addError}</p>}
+            {addError && <div className="text-sm text-red-600 whitespace-pre-line">{addError}</div>}
             <DialogFooter>
               <Button
                 type="button"
@@ -4039,14 +4090,18 @@ export default function ClientDetailPage() {
                 }
                 className="bg-gray-50 border-gray-300"
               />
-              <Input
-                placeholder="Gender"
+              <select
                 value={familyForm.gender}
-                onChange={(e) =>
-                  setFamilyForm((p) => ({ ...p, gender: e.target.value }))
-                }
-                className="bg-gray-50 border-gray-300"
-              />
+                onChange={(e) => setFamilyForm((p) => ({ ...p, gender: e.target.value }))}
+                style={{ height: 36, borderRadius: 6, border: '1px solid #D1D5DB', background: '#F9FAFB', padding: '0 10px', fontSize: 14, width: '100%' }}
+              >
+                <option value="" disabled>Select gender</option>
+                <option value="MALE">Male</option>
+                <option value="FEMALE">Female</option>
+                <option value="OTHER">Other</option>
+                <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
+                <option value="UNSPECIFIED">Unspecified</option>
+              </select>
               <Input
                 placeholder="Age"
                 type="number"
@@ -4067,25 +4122,16 @@ export default function ClientDetailPage() {
                 }
                 className="bg-gray-50 border-gray-300"
               />
-              <Input
-                placeholder="Profession"
-                value={familyForm.profession}
-                onChange={(e) =>
-                  setFamilyForm((p) => ({ ...p, profession: e.target.value }))
-                }
-                className="bg-gray-50 border-gray-300"
-              />
-              <Input
-                placeholder="Marital status"
-                value={familyForm.maritalStatus}
-                onChange={(e) =>
-                  setFamilyForm((p) => ({
-                    ...p,
-                    maritalStatus: e.target.value,
-                  }))
-                }
-                className="bg-gray-50 border-gray-300"
-              />
+              <select value={familyForm.profession} onChange={(e) => setFamilyForm((p) => ({ ...p, profession: e.target.value }))} style={{ height: 36, borderRadius: 6, border: '1px solid #D1D5DB', background: '#F9FAFB', padding: '0 10px', fontSize: 14, width: '100%' }}>
+                <option value="" disabled>Profession</option>
+                <option value="employed">Employed</option>
+                <option value="entreprenuer">Entrepreneur</option>
+              </select>
+              <select value={familyForm.maritalStatus} onChange={(e) => setFamilyForm((p) => ({ ...p, maritalStatus: e.target.value }))} style={{ height: 36, borderRadius: 6, border: '1px solid #D1D5DB', background: '#F9FAFB', padding: '0 10px', fontSize: 14, width: '100%' }}>
+                <option value="" disabled>Marital status</option>
+                <option value="SINGLE">Single</option>
+                <option value="MARRIED">Married</option>
+              </select>
               <Input
                 placeholder="Mobile number"
                 value={familyForm.mobileNumber}
@@ -4126,7 +4172,7 @@ export default function ClientDetailPage() {
                 Dependent
               </Label>
             </div>
-            {addError && <p className="text-sm text-red-600">{addError}</p>}
+            {addError && <div className="text-sm text-red-600 whitespace-pre-line">{addError}</div>}
             <DialogFooter>
               <Button
                 type="button"
@@ -4198,7 +4244,7 @@ export default function ClientDetailPage() {
               }
               className="bg-gray-50 border-gray-300"
             />
-            {addError && <p className="text-sm text-red-600">{addError}</p>}
+            {addError && <div className="text-sm text-red-600 whitespace-pre-line">{addError}</div>}
             <DialogFooter>
               <Button
                 type="button"
@@ -4258,7 +4304,7 @@ export default function ClientDetailPage() {
               }
               className="bg-gray-50 border-gray-300"
             />
-            {addError && <p className="text-sm text-red-600">{addError}</p>}
+            {addError && <div className="text-sm text-red-600 whitespace-pre-line">{addError}</div>}
             <DialogFooter>
               <Button
                 type="button"

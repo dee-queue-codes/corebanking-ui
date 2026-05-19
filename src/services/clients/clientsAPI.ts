@@ -27,6 +27,8 @@ export const clientsAPI = {
     http.post(`/clients/${clientId}/identifiers`, data, config),
   updateIdentity: (clientId: string, identifierId: string | number, data: Record<string, unknown>, config?: RequestConfig) =>
     http.put(`/clients/${clientId}/identifiers/${identifierId}`, data, config),
+  deleteIdentity: (clientId: string, identifierId: string | number, config?: RequestConfig) =>
+    http.delete(`/clients/${clientId}/identifiers/${identifierId}`, config),
   getDocuments: (clientId: string, config?: RequestConfig) => http.get(`/clients/${clientId}/documents`, config),
   createDocument: (clientId: string, data: FormData | Record<string, unknown>, config?: RequestConfig) =>
     http.post(`/clients/${clientId}/documents`, data, data instanceof FormData
