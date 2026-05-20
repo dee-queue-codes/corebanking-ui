@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { reportsAPI } from '@/services/reports/reportsAPI'
+import type { Office } from '@/services/reports/reportsAPI'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -148,6 +149,11 @@ export default function TransactionsPage() {
   const [loading, setLoading]           = useState(true)
   const [error, setError]               = useState('')
 
+  const [offices, setOffices]           = useState<Office[]>([])
+  const [officeId, setOfficeId]         = useState<number | null>(null)
+  const [officeOpen, setOfficeOpen]     = useState(false)
+  const officeRef                       = useRef<HTMLDivElement>(null)
+
   const [search, setSearch]             = useState('')
   const [typeFilter, setTypeFilter]     = useState<'All' | TxType>('All')
   const [statusFilter, setStatusFilter] = useState<'All' | TxStatus>('All')
@@ -160,11 +166,21 @@ export default function TransactionsPage() {
   const statusRef  = useRef<HTMLDivElement>(null)
   const actionRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
+  // Load offices once, then set default to first office
+  useEffect(() => {
+    reportsAPI.getOffices().then(res => {
+      const list = (res as { data?: { data?: Office[] } }).data?.data ?? []
+      setOffices(list)
+      if (list.length > 0) setOfficeId(list[0].id)
+    }).catch(() => {})
+  }, [])
+
   const fetchTransactions = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
-      const res  = await reportsAPI.getBranchTransactions()
+      const params = officeId != null ? { officeId } : undefined
+      const res  = await reportsAPI.getBranchTransactions(params)
       const body = (res as { data?: unknown }).data
       const rows = extractArray(body).map(mapTx)
       setTransactions(rows)
@@ -173,12 +189,16 @@ export default function TransactionsPage() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [officeId])
 
-  useEffect(() => { fetchTransactions() }, [fetchTransactions])
+  // Fetch whenever officeId is set or changes
+  useEffect(() => {
+    if (officeId != null) fetchTransactions()
+  }, [officeId, fetchTransactions])
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
+      if (officeRef.current && !officeRef.current.contains(e.target as Node)) setOfficeOpen(false)
       if (typeRef.current   && !typeRef.current.contains(e.target as Node))   setTypeOpen(false)
       if (statusRef.current && !statusRef.current.contains(e.target as Node)) setStatusOpen(false)
       if (actionMenu) {
@@ -266,6 +286,27 @@ export default function TransactionsPage() {
               className="w-full pl-9 pr-4 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all placeholder:text-gray-400"
             />
           </div>
+
+          {/* Office filter */}
+          {offices.length > 0 && (
+            <div className="relative" ref={officeRef}>
+              <button onClick={() => { setOfficeOpen(v => !v); setTypeOpen(false); setStatusOpen(false) }}
+                className="flex items-center gap-1.5 px-3 h-9 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all text-xs text-gray-600 font-medium">
+                Office: <span className="text-gray-900">{offices.find(o => o.id === officeId)?.name ?? '—'}</span>
+                <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform ${officeOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {officeOpen && (
+                <div className="absolute top-full left-0 mt-1 z-20 bg-white rounded-xl border border-gray-100 shadow-lg py-1 min-w-[160px]">
+                  {offices.map(o => (
+                    <button key={o.id} onClick={() => { setOfficeId(o.id); setOfficeOpen(false) }}
+                      className={`w-full text-left px-4 py-2 text-xs transition-colors ${officeId === o.id ? 'bg-blue-50 text-[#002663] font-semibold' : 'text-gray-700 hover:bg-gray-50'}`}>
+                      {o.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Type filter */}
           <div className="relative" ref={typeRef}>

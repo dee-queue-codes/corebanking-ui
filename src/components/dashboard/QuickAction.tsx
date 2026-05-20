@@ -17,16 +17,22 @@ interface QuickActionButtonProps {
   label: string
   icon: LucideIcon
   onClick: () => void
+  disabled?: boolean
 }
 
-function QuickActionButton({ label, icon: Icon, onClick }: QuickActionButtonProps) {
+function QuickActionButton({ label, icon: Icon, onClick, disabled = false }: QuickActionButtonProps) {
   return (
     <button
-      onClick={onClick}
-      className="flex flex-1 flex-col items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 p-3 text-center transition-colors hover:bg-gray-100 cursor-pointer w-full h-full"
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      className={`flex flex-1 flex-col items-center justify-center gap-2 rounded-xl border p-3 text-center transition-colors w-full h-full ${
+        disabled
+          ? 'cursor-not-allowed border-gray-100 bg-gray-50/60 opacity-35 select-none'
+          : 'border-gray-200 bg-gray-50 hover:bg-gray-100 cursor-pointer'
+      }`}
     >
-      <Icon className="w-5 h-5 text-[#002663]" />
-      <span className="text-xs font-medium text-gray-700 leading-tight">{label}</span>
+      <Icon className={`w-5 h-5 ${disabled ? 'text-gray-300' : 'text-[#002663]'}`} />
+      <span className={`text-xs font-medium leading-tight ${disabled ? 'text-gray-400' : 'text-gray-700'}`}>{label}</span>
     </button>
   )
 }
@@ -40,16 +46,16 @@ interface QuickActionProps {
 export function QuickAction({ className, onCashDeposit, onCashWithdraw }: QuickActionProps) {
   const navigate = useNavigate()
 
-  const actions: { label: string; icon: LucideIcon; onClick: () => void }[] = [
+  const actions: { label: string; icon: LucideIcon; onClick: () => void; disabled?: boolean }[] = [
     { label: 'Transactions',      icon: ArrowRightLeft,  onClick: () => navigate(ROUTES.TRANSACTIONS) },
     { label: 'Cash Deposits',     icon: ArrowDownToLine, onClick: () => onCashDeposit?.() },
     { label: 'Cash Withdrawal',   icon: ArrowUpFromLine, onClick: () => onCashWithdraw?.() },
     { label: 'Clients',           icon: Users,           onClick: () => navigate(ROUTES.CLIENTS.LIST) },
     { label: 'Products',          icon: Package,         onClick: () => navigate(ROUTES.PRODUCTS.LIST) },
     { label: 'Reports',           icon: FileText,        onClick: () => navigate(ROUTES.REPORTS.ROOT) },
-    { label: 'Offices',           icon: Building2,       onClick: () => navigate(ROUTES.ADMINISTRATION.OFFICES) },
-    { label: 'User Management',   icon: UserCog,         onClick: () => navigate(ROUTES.ADMINISTRATION.USERS) },
-    { label: 'Chart Of Accounts', icon: PieChart,        onClick: () => navigate(ROUTES.ACCOUNTING.CHART) },
+    { label: 'Offices',           icon: Building2,       onClick: () => {}, disabled: true },
+    { label: 'User Management',   icon: UserCog,         onClick: () => {}, disabled: true },
+    { label: 'Chart Of Accounts', icon: PieChart,        onClick: () => {}, disabled: true },
   ]
 
   const rows = [
@@ -70,6 +76,7 @@ export function QuickAction({ className, onCashDeposit, onCashWithdraw }: QuickA
                 label={action.label}
                 icon={action.icon}
                 onClick={action.onClick}
+                disabled={action.disabled}
               />
             ))}
           </div>
