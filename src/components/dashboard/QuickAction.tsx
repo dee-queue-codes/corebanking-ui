@@ -23,15 +23,15 @@ function QuickActionButton({ label, icon: Icon, onClick }: QuickActionButtonProp
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 px-3 py-2.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left w-full cursor-pointer"
+      className="flex flex-1 flex-col items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 p-3 text-center transition-colors hover:bg-gray-100 cursor-pointer w-full h-full"
     >
-      <Icon className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
-      <span className="text-sm text-gray-700">{label}</span>
+      <Icon className="w-5 h-5 text-[#002663]" />
+      <span className="text-xs font-medium text-gray-700 leading-tight">{label}</span>
     </button>
   )
 }
 
-export function QuickAction() {
+export function QuickAction({ className }: { className?: string }) {
   const navigate = useNavigate()
 
   const actions: { label: string; icon: LucideIcon; route: string }[] = [
@@ -53,11 +53,11 @@ export function QuickAction() {
   ]
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-5">
-      <h3 className="mb-4 text-base font-medium text-gray-900">Quick Action</h3>
-      <div className="space-y-2.5">
+    <div className={`flex flex-col bg-white rounded-2xl border border-gray-100 p-5 ${className ?? ''}`}>
+      <h3 className="mb-4 text-sm font-bold text-gray-900">Quick Action</h3>
+      <div className="flex flex-1 flex-col gap-2.5">
         {rows.map((row, rowIndex) => (
-          <div key={rowIndex} className="grid grid-cols-3 gap-2.5">
+          <div key={rowIndex} className="flex flex-1 gap-2.5">
             {row.map((action) => (
               <QuickActionButton
                 key={action.label}

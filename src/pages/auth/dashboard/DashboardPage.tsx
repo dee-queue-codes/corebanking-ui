@@ -102,125 +102,118 @@ export default function DashboardPage() {
         <StatCard label="Pending KYC"      value="23"         sub="-4.2%"  up={false} iconBg="bg-orange-50"  icon={<Clock       className="w-5 h-5 text-orange-500"  />} />
       </div>
 
-      {/* Main grid — left (1/3) + right (2/3) */}
+      {/* Main grid — 3 cols × 2 rows, all 4 panels are direct children */}
       <div className="grid grid-cols-3 gap-4">
 
-        {/* ── Left column: Quick Actions + Client Growth ── */}
-        <div className="col-span-1 flex flex-col gap-4">
-
-          {/* Quick Actions */}
-          <QuickAction />
-
-          {/* Client Growth */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-6">
-            <div className="mb-4">
-              <h3 className="text-sm font-bold text-gray-900">Client Growth</h3>
-              <p className="text-xs text-gray-400 mt-0.5">New registrations · 7 months</p>
-            </div>
-            <ResponsiveContainer width="100%" height={170}>
-              <BarChart data={clientGrowthData} margin={{ top: 4, right: 4, left: -24, bottom: 0 }} barSize={14}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af', fontFamily: 'DM Sans' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#9ca3af', fontFamily: 'DM Sans' }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  cursor={{ fill: '#f1f5f9' }}
-                  content={({ active, payload, label }) => {
-                    if (!active || !payload?.length) return null
-                    return (
-                      <div className="bg-white border border-gray-100 rounded-xl shadow-lg px-3 py-2 text-xs">
-                        <p className="font-semibold text-gray-700 mb-1">{label}</p>
-                        <p className="font-bold text-gray-900">{payload[0].value} clients</p>
-                      </div>
-                    )
-                  }}
-                />
-                <Bar dataKey="clients" fill="#002663" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+        {/* Row 1 left — Quick Actions (stretches to match Transaction Volume) */}
+        <div className="col-span-1">
+          <QuickAction className="h-full" />
         </div>
 
-        {/* ── Right column: Transaction Volume + Recent Activity ── */}
-        <div className="col-span-2 flex flex-col gap-4">
-
-          {/* Transaction Volume */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-6">
-            <div className="flex items-center justify-between mb-5">
-              <div>
-                <h3 className="text-sm font-bold text-gray-900">Transaction Volume</h3>
-                <p className="text-xs text-gray-400 mt-0.5">Deposits vs withdrawals · last 7 months</p>
-              </div>
-              <div className="flex items-center gap-3 text-xs font-semibold text-gray-500">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-[#002663] inline-block" />Deposits
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-sm bg-blue-200 inline-block" />Withdrawals
-                </span>
-              </div>
+        {/* Row 1 right — Transaction Volume */}
+        <div className="col-span-2 bg-white rounded-2xl border border-gray-100 p-6">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h3 className="text-sm font-bold text-gray-900">Transaction Volume</h3>
+              <p className="text-xs text-gray-400 mt-0.5">Deposits vs withdrawals · last 7 months</p>
             </div>
-            <ResponsiveContainer width="100%" height={210}>
-              <AreaChart data={txVolumeData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="depGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#002663" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="#002663" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="wdGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#93c5fd" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#93c5fd" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af', fontFamily: 'DM Sans' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#9ca3af', fontFamily: 'DM Sans' }} axisLine={false} tickLine={false} />
-                <Tooltip content={<ChartTooltip />} />
-                <Area type="monotone" dataKey="deposits"    stroke="#002663" strokeWidth={2.5} fill="url(#depGrad)" dot={false} />
-                <Area type="monotone" dataKey="withdrawals" stroke="#93c5fd" strokeWidth={2}   fill="url(#wdGrad)"  dot={false} />
-              </AreaChart>
-            </ResponsiveContainer>
+            <div className="flex items-center gap-3 text-xs font-semibold text-gray-500">
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-sm bg-[#002663] inline-block" />Deposits
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-sm bg-blue-200 inline-block" />Withdrawals
+              </span>
+            </div>
           </div>
+          <ResponsiveContainer width="100%" height={210}>
+            <AreaChart data={txVolumeData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="depGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#002663" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#002663" stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="wdGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%"  stopColor="#93c5fd" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#93c5fd" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af', fontFamily: 'DM Sans' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: '#9ca3af', fontFamily: 'DM Sans' }} axisLine={false} tickLine={false} />
+              <Tooltip content={<ChartTooltip />} />
+              <Area type="monotone" dataKey="deposits"    stroke="#002663" strokeWidth={2.5} fill="url(#depGrad)" dot={false} />
+              <Area type="monotone" dataKey="withdrawals" stroke="#93c5fd" strokeWidth={2}   fill="url(#wdGrad)"  dot={false} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
 
-          {/* Recent Activity */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-sm font-bold text-gray-900">Recent Activity</h3>
-                <p className="text-xs text-gray-400 mt-0.5">Latest client & account events</p>
-              </div>
-              <button className="text-xs font-semibold text-[#002663] hover:opacity-70 transition-opacity">View all</button>
+        {/* Row 2 left — Client Growth */}
+        <div className="col-span-1 bg-white rounded-2xl border border-gray-100 p-6">
+          <div className="mb-4">
+            <h3 className="text-sm font-bold text-gray-900">Client Growth</h3>
+            <p className="text-xs text-gray-400 mt-0.5">New registrations · 7 months</p>
+          </div>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={clientGrowthData} margin={{ top: 4, right: 4, left: -24, bottom: 0 }} barSize={14}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af', fontFamily: 'DM Sans' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: '#9ca3af', fontFamily: 'DM Sans' }} axisLine={false} tickLine={false} />
+              <Tooltip
+                cursor={{ fill: '#f1f5f9' }}
+                content={({ active, payload, label }) => {
+                  if (!active || !payload?.length) return null
+                  return (
+                    <div className="bg-white border border-gray-100 rounded-xl shadow-lg px-3 py-2 text-xs">
+                      <p className="font-semibold text-gray-700 mb-1">{label}</p>
+                      <p className="font-bold text-gray-900">{payload[0].value} clients</p>
+                    </div>
+                  )
+                }}
+              />
+              <Bar dataKey="clients" fill="#002663" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Row 2 right — Recent Activity */}
+        <div className="col-span-2 bg-white rounded-2xl border border-gray-100 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-gray-900">Recent Activity</h3>
+              <p className="text-xs text-gray-400 mt-0.5">Latest client & account events</p>
             </div>
-            <div className="space-y-0.5">
-              {[
-                { name: 'Pearl Adzoko',  action: 'Account activated',        time: '2 min ago',  type: 'success' },
-                { name: 'Kwame Mensah',  action: 'KYC documents submitted',  time: '18 min ago', type: 'info'    },
-                { name: 'Ama Boateng',   action: 'Deposit · GHS 4,500',      time: '1 hr ago',   type: 'success' },
-                { name: 'Kofi Asare',    action: 'Loan application pending',  time: '2 hr ago',   type: 'warning' },
-                { name: 'Akosua Owusu',  action: 'Profile updated',           time: '3 hr ago',   type: 'info'    },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0">
-                  <div className="w-8 h-8 rounded-full bg-[#002663] flex items-center justify-center shrink-0">
-                    <span className="text-white text-[10px] font-bold">
-                      {item.name.split(' ').map(n => n[0]).join('')}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-900 truncate">{item.name}</p>
-                    <p className="text-[11px] text-gray-400 truncate">{item.action}</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1 shrink-0">
-                    <span className={`w-1.5 h-1.5 rounded-full ${
-                      item.type === 'success' ? 'bg-emerald-400' :
-                      item.type === 'warning' ? 'bg-orange-400' : 'bg-blue-400'
-                    }`} />
-                    <span className="text-[10px] text-gray-400">{item.time}</span>
-                  </div>
+            <button className="text-xs font-semibold text-[#002663] hover:opacity-70 transition-opacity">View all</button>
+          </div>
+          <div className="space-y-0.5">
+            {[
+              { name: 'Pearl Adzoko',  action: 'Account activated',        time: '2 min ago',  type: 'success' },
+              { name: 'Kwame Mensah',  action: 'KYC documents submitted',  time: '18 min ago', type: 'info'    },
+              { name: 'Ama Boateng',   action: 'Deposit · GHS 4,500',      time: '1 hr ago',   type: 'success' },
+              { name: 'Kofi Asare',    action: 'Loan application pending',  time: '2 hr ago',   type: 'warning' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0">
+                <div className="w-8 h-8 rounded-full bg-[#002663] flex items-center justify-center shrink-0">
+                  <span className="text-white text-[10px] font-bold">
+                    {item.name.split(' ').map(n => n[0]).join('')}
+                  </span>
                 </div>
-              ))}
-            </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-gray-900 truncate">{item.name}</p>
+                  <p className="text-[11px] text-gray-400 truncate">{item.action}</p>
+                </div>
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    item.type === 'success' ? 'bg-emerald-400' :
+                    item.type === 'warning' ? 'bg-orange-400' : 'bg-blue-400'
+                  }`} />
+                  <span className="text-[10px] text-gray-400">{item.time}</span>
+                </div>
+              </div>
+            ))}
           </div>
-
         </div>
+
       </div>
     </div>
   )
