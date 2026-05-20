@@ -16,18 +16,14 @@ import { ROUTES } from '@/router/routes'
 interface QuickActionButtonProps {
   label: string
   icon: LucideIcon
-  onClick?: () => void
-  disabled?: boolean
+  onClick: () => void
 }
 
-function QuickActionButton({ label, icon: Icon, onClick, disabled = false }: QuickActionButtonProps) {
+function QuickActionButton({ label, icon: Icon, onClick }: QuickActionButtonProps) {
   return (
     <button
-      onClick={disabled ? undefined : onClick}
-      disabled={disabled}
-      className={`flex items-center gap-2 px-3 py-2.5 bg-white border border-gray-200 rounded-lg transition-colors text-left w-full ${
-        disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-gray-50 cursor-pointer'
-      }`}
+      onClick={onClick}
+      className="flex items-center gap-2 px-3 py-2.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left w-full cursor-pointer"
     >
       <Icon className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
       <span className="text-sm text-gray-700">{label}</span>
@@ -38,30 +34,22 @@ function QuickActionButton({ label, icon: Icon, onClick, disabled = false }: Qui
 export function QuickAction() {
   const navigate = useNavigate()
 
-  const iconMap: Record<string, LucideIcon> = {
-    'Transactions':      ArrowRightLeft,
-    'Cash Deposits':     ArrowDownToLine,
-    'Cash Withdrawal':   ArrowUpFromLine,
-    'Clients':           Users,
-    'Products':          Package,
-    'Reports':           FileText,
-    'Offices':           Building2,
-    'User Management':   UserCog,
-    'Chart Of Accounts': PieChart,
-  }
-
-  const routeMap: Record<string, string> = {
-    'Clients':         ROUTES.CLIENTS.LIST,
-    'Products':        ROUTES.PRODUCTS.LIST,
-    'User Management': ROUTES.ADMINISTRATION.USERS,
-  }
-
-  const enabledActions = new Set(['Clients', 'Products', 'User Management'])
+  const actions: { label: string; icon: LucideIcon; route: string }[] = [
+    { label: 'Transactions',      icon: ArrowRightLeft,  route: ROUTES.TRANSACTIONS },
+    { label: 'Cash Deposits',     icon: ArrowDownToLine, route: ROUTES.TRANSACTIONS },
+    { label: 'Cash Withdrawal',   icon: ArrowUpFromLine, route: ROUTES.TRANSACTIONS },
+    { label: 'Clients',           icon: Users,           route: ROUTES.CLIENTS.LIST },
+    { label: 'Products',          icon: Package,         route: ROUTES.PRODUCTS.LIST },
+    { label: 'Reports',           icon: FileText,        route: ROUTES.REPORTS.ROOT },
+    { label: 'Offices',           icon: Building2,       route: ROUTES.ADMINISTRATION.OFFICES },
+    { label: 'User Management',   icon: UserCog,         route: ROUTES.ADMINISTRATION.USERS },
+    { label: 'Chart Of Accounts', icon: PieChart,        route: ROUTES.ACCOUNTING.CHART },
+  ]
 
   const rows = [
-    ['Transactions',  'Cash Deposits',   'Cash Withdrawal'],
-    ['Clients',       'Products',        'Reports'],
-    ['Offices',       'User Management', 'Chart Of Accounts'],
+    actions.slice(0, 3),
+    actions.slice(3, 6),
+    actions.slice(6, 9),
   ]
 
   return (
@@ -70,18 +58,14 @@ export function QuickAction() {
       <div className="space-y-2.5">
         {rows.map((row, rowIndex) => (
           <div key={rowIndex} className="grid grid-cols-3 gap-2.5">
-            {row.map((action, colIndex) => {
-              const isDisabled = !enabledActions.has(action)
-              return (
-                <QuickActionButton
-                  key={`${rowIndex}-${colIndex}`}
-                  label={action}
-                  icon={iconMap[action]}
-                  disabled={isDisabled}
-                  onClick={isDisabled ? undefined : () => navigate(routeMap[action])}
-                />
-              )
-            })}
+            {row.map((action) => (
+              <QuickActionButton
+                key={action.label}
+                label={action.label}
+                icon={action.icon}
+                onClick={() => navigate(action.route)}
+              />
+            ))}
           </div>
         ))}
       </div>
