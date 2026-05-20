@@ -434,76 +434,78 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="min-h-full bg-[#f8f9fc] p-7" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="min-h-full bg-[#f8f9fc]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="flex min-h-full">
 
-      {/* Page header */}
-      <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-gray-900">Reports</h1>
-          <p className="mt-0.5 text-xs font-medium text-gray-400">Run contribution, branch, and account reports</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" size="sm" disabled={!rawPayload && rows.length === 0} onClick={exportJson} className="border-gray-200 text-xs text-gray-600 hover:bg-gray-50">
-            <Download className="h-3.5 w-3.5" />Export
-          </Button>
-          <Button type="button" size="sm" onClick={runReport} disabled={loading} className="bg-[#002663] text-xs text-white hover:bg-[#001f52]">
-            {loading ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5 shrink-0" />}
-            Run Report
-          </Button>
-        </div>
-      </div>
+        {/* ── Left sidebar ── */}
+        <aside className="flex w-72 shrink-0 flex-col gap-5 border-r border-gray-200 bg-white p-6">
 
-      {/* Category tabs */}
-      <div className="mb-4 flex gap-2">
-        {categories.map(cat => {
-          const CatIcon = cat.icon
-          const active = cat.key === selectedCategory
-          return (
-            <button
-              key={cat.key}
-              type="button"
-              onClick={() => selectCategory(cat.key)}
-              className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold transition-colors"
-              style={active
-                ? { backgroundColor: CATEGORY_COLORS[cat.key], color: '#fff' }
-                : { backgroundColor: '#fff', color: '#374151', border: '1px solid #e5e7eb' }}
-            >
-              <CatIcon className="h-4 w-4" />
-              {cat.label}
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Sub-report dropdown */}
-      {currentCategory.reports.length > 1 && (
-        <div className="mb-5">
-          <select
-            value={selectedKey}
-            onChange={e => selectReport(e.target.value as ReportKey)}
-            className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            {currentCategory.reports.map(report => (
-              <option key={report.key} value={report.key}>{report.title}</option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      <div className="space-y-5">
-        {/* Filter panel */}
-        <section className="rounded-2xl border border-gray-100 bg-white">
-          <div className="flex items-start gap-3 border-b border-gray-100 px-6 py-4">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: `${accentColor}15`, color: accentColor }}>
-              <Icon className="h-4 w-4" />
-            </div>
-            <div>
-              <h2 className="text-sm font-bold text-gray-900">{selectedReport.title}</h2>
-              <p className="mt-0.5 text-xs text-gray-400">{selectedReport.description}</p>
-            </div>
+          {/* Header */}
+          <div>
+            <h1 className="text-lg font-extrabold tracking-tight text-gray-900">Reports</h1>
+            <p className="mt-0.5 text-xs font-medium text-gray-400">Run contribution, branch, and account reports</p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-2 xl:grid-cols-4">
+          {/* Actions */}
+          <div className="flex flex-col gap-2">
+            <Button type="button" size="sm" onClick={runReport} disabled={loading} className="w-full bg-[#002663] text-xs text-white hover:bg-[#001f52]">
+              {loading ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5 shrink-0" />}
+              Run Report
+            </Button>
+            <Button type="button" variant="outline" size="sm" disabled={!rawPayload && rows.length === 0} onClick={exportJson} className="w-full border-gray-200 text-xs text-gray-600 hover:bg-gray-50">
+              <Download className="h-3.5 w-3.5" />Export
+            </Button>
+          </div>
+
+          {/* Category tabs */}
+          <div className="flex flex-col gap-1">
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">Category</p>
+            {categories.map(cat => {
+              const CatIcon = cat.icon
+              const active = cat.key === selectedCategory
+              return (
+                <button
+                  key={cat.key}
+                  type="button"
+                  onClick={() => selectCategory(cat.key)}
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors text-left"
+                  style={active
+                    ? { backgroundColor: CATEGORY_COLORS[cat.key], color: '#fff' }
+                    : { color: '#374151' }}
+                >
+                  <CatIcon className="h-4 w-4 shrink-0" />
+                  {cat.label}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Sub-report select */}
+          {currentCategory.reports.length > 1 && (
+            <div className="flex flex-col gap-1">
+              <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">Report Type</p>
+              {currentCategory.reports.map(report => {
+                const active = report.key === selectedKey
+                return (
+                  <button
+                    key={report.key}
+                    type="button"
+                    onClick={() => selectReport(report.key)}
+                    className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors text-left"
+                    style={active
+                      ? { backgroundColor: `${accentColor}12`, color: accentColor, fontWeight: 700 }
+                      : { color: '#6b7280' }}
+                  >
+                    {report.title}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Filter fields */}
+          <div className="flex flex-col gap-4">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Filters</p>
             {selectedReport.fields.includes('dateRange') && (
               <>
                 <div>
@@ -570,130 +572,199 @@ export default function ReportsPage() {
               </>
             )}
           </div>
-        </section>
+        </aside>
 
-        {error && (
-          <div className="rounded-2xl border border-red-100 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">{error}</div>
-        )}
+        {/* ── Right content ── */}
+        <main className="flex min-w-0 flex-1 flex-col gap-4 p-6">
 
-        {/* Results */}
-        <section className="overflow-hidden rounded-2xl border border-gray-100 bg-white">
-          <div className="flex flex-col gap-3 border-b border-gray-100 px-6 py-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h3 className="text-sm font-bold text-gray-900">{selectedReport.title} — Results</h3>
-              <p className="mt-0.5 text-xs text-gray-400">{hasRun ? `${filteredRows.length}${filteredRows.length !== rows.length ? ` of ${rows.length}` : ''} row${filteredRows.length === 1 ? '' : 's'} returned` : 'Run the report to see results'}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              {rows.length > 0 && Object.keys(columnUniqueValues).length > 0 && (
-                <div className="relative" ref={filterRef}>
-                  <button
-                    type="button"
-                    onClick={() => setFilterOpen(o => !o)}
-                    className="flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors"
-                    style={Object.values(tableFilters).some(v => v)
-                      ? { borderColor: accentColor, color: accentColor, backgroundColor: `${accentColor}10` }
-                      : { borderColor: '#e5e7eb', color: '#6b7280', backgroundColor: '#fff' }}
-                  >
-                    <Filter className="h-3.5 w-3.5" />
-                    Filter
-                    {Object.values(tableFilters).filter(Boolean).length > 0 && (
-                      <span className="ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold text-white" style={{ backgroundColor: accentColor }}>
-                        {Object.values(tableFilters).filter(Boolean).length}
-                      </span>
-                    )}
-                  </button>
-                  {filterOpen && (
-                    <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-gray-100 bg-white p-3 shadow-lg space-y-3">
-                      {Object.entries(columnUniqueValues).map(([col, vals]) => (
-                        <div key={col}>
-                          <Label className="mb-1 block text-xs font-medium text-gray-500">{formatHeader(col)}</Label>
-                          <select
-                            value={tableFilters[col] ?? ''}
-                            onChange={e => { setTableFilters(p => ({ ...p, [col]: e.target.value })); setFilterOpen(false) }}
-                            className="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          >
-                            <option value="">All</option>
-                            {vals.map(v => <option key={v} value={v}>{v}</option>)}
-                          </select>
-                        </div>
-                      ))}
-                      {Object.values(tableFilters).some(Boolean) && (
-                        <button
-                          type="button"
-                          onClick={() => setTableFilters({})}
-                          className="w-full rounded-lg border border-gray-200 py-1.5 text-xs font-semibold text-gray-500 hover:bg-gray-50"
-                        >
-                          Clear filters
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-              <Button type="button" variant="outline" size="sm" disabled={rows.length === 0} onClick={exportJson} className="border-gray-200 text-xs text-gray-600">
-                <Download className="h-3.5 w-3.5" />Export JSON
-              </Button>
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="flex items-center justify-center gap-2 px-5 py-16 text-sm font-medium text-gray-400">
-              <RefreshCw className="h-4 w-4 animate-spin" />Loading report...
-            </div>
-          ) : rows.length === 0 ? (
-            <div className="px-5 py-16 text-center">
-              <p className="text-sm font-semibold text-gray-500">{hasRun ? 'No data returned for this report.' : 'Run a report to view results.'}</p>
-              <p className="mt-1 text-xs text-gray-400">Set your filters above and click Run Report.</p>
-            </div>
-          ) : filteredRows.length === 0 ? (
-            <div className="px-5 py-10 text-center">
-              <p className="text-sm font-semibold text-gray-500">No results match your filter.</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b border-gray-200 bg-gray-50">
-                    {columns.map(col => (
-                      <th key={col} className={`whitespace-nowrap px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 ${isAmountColumn(col) ? 'text-right' : 'text-left'}`}>
-                        {formatHeader(col)}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {filteredRows.map((row, i) => (
-                    <tr key={i} className="hover:bg-gray-50 transition-colors">
-                      {columns.map((col, ci) => (
-                        <td
-                          key={col}
-                          className={`px-5 py-3 text-sm ${isAmountColumn(col) ? 'text-right tabular-nums font-medium text-gray-800' : ci === 0 ? 'font-medium text-gray-900' : 'text-gray-600'}`}
-                          title={formatValue(row[col], isAmountColumn(col))}
-                        >
-                          {formatValue(row[col], isAmountColumn(col))}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-                {columns.some(col => columnTotal(filteredRows, col) !== null) && (
-                  <tfoot>
-                    <tr className="border-t-2 border-gray-200 bg-gray-50">
-                      {columns.map((col, i) => {
-                        const total = columnTotal(filteredRows, col)
-                        return (
-                          <td key={col} className={`px-5 py-3 text-sm font-bold text-gray-900 ${isAmountColumn(col) ? 'text-right tabular-nums' : ''}`}>
-                            {i === 0 ? 'Total' : total !== null ? formatValue(total, isAmountColumn(col)) : ''}
-                          </td>
-                        )
-                      })}
-                    </tr>
-                  </tfoot>
-                )}
-              </table>
-            </div>
+          {error && (
+            <div className="rounded-2xl border border-red-100 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">{error}</div>
           )}
-        </section>
+
+          {/* Results table */}
+          <section className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white">
+            {/* Table header bar */}
+            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+              <div>
+                <h3 className="text-sm font-bold text-gray-900">{selectedReport.title}</h3>
+                <p className="mt-0.5 text-xs text-gray-400">
+                  {hasRun
+                    ? `${filteredRows.length}${filteredRows.length !== rows.length ? ` of ${rows.length}` : ''} row${filteredRows.length === 1 ? '' : 's'}`
+                    : 'Run the report to see results'}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                {rows.length > 0 && Object.keys(columnUniqueValues).length > 0 && (
+                  <div className="relative" ref={filterRef}>
+                    <button
+                      type="button"
+                      onClick={() => setFilterOpen(o => !o)}
+                      className="flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors"
+                      style={Object.values(tableFilters).some(v => v)
+                        ? { borderColor: accentColor, color: accentColor, backgroundColor: `${accentColor}10` }
+                        : { borderColor: '#e5e7eb', color: '#6b7280', backgroundColor: '#fff' }}
+                    >
+                      <Filter className="h-3.5 w-3.5" />
+                      Filter
+                      {Object.values(tableFilters).filter(Boolean).length > 0 && (
+                        <span className="ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold text-white" style={{ backgroundColor: accentColor }}>
+                          {Object.values(tableFilters).filter(Boolean).length}
+                        </span>
+                      )}
+                    </button>
+                    {filterOpen && (
+                      <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-gray-100 bg-white p-3 shadow-lg space-y-3">
+                        {Object.entries(columnUniqueValues).map(([col, vals]) => (
+                          <div key={col}>
+                            <Label className="mb-1 block text-xs font-medium text-gray-500">{formatHeader(col)}</Label>
+                            <select
+                              value={tableFilters[col] ?? ''}
+                              onChange={e => { setTableFilters(p => ({ ...p, [col]: e.target.value })); setFilterOpen(false); setCurrentPage(1) }}
+                              className="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="">All</option>
+                              {vals.map(v => <option key={v} value={v}>{v}</option>)}
+                            </select>
+                          </div>
+                        ))}
+                        {Object.values(tableFilters).some(Boolean) && (
+                          <button
+                            type="button"
+                            onClick={() => { setTableFilters({}); setCurrentPage(1) }}
+                            className="w-full rounded-lg border border-gray-200 py-1.5 text-xs font-semibold text-gray-500 hover:bg-gray-50"
+                          >
+                            Clear filters
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+                <Button type="button" variant="outline" size="sm" disabled={rows.length === 0} onClick={exportJson} className="border-gray-200 text-xs text-gray-600">
+                  <Download className="h-3.5 w-3.5" />Export JSON
+                </Button>
+              </div>
+            </div>
+
+            {/* Table body */}
+            {loading ? (
+              <div className="flex flex-1 items-center justify-center gap-2 py-20 text-sm font-medium text-gray-400">
+                <RefreshCw className="h-4 w-4 animate-spin" />Loading report...
+              </div>
+            ) : rows.length === 0 ? (
+              <div className="flex flex-1 flex-col items-center justify-center py-20 text-center">
+                <p className="text-sm font-semibold text-gray-500">{hasRun ? 'No data returned for this report.' : 'Run a report to view results.'}</p>
+                <p className="mt-1 text-xs text-gray-400">Set your filters and click Run Report.</p>
+              </div>
+            ) : filteredRows.length === 0 ? (
+              <div className="flex flex-1 items-center justify-center py-16 text-center">
+                <p className="text-sm font-semibold text-gray-500">No results match your filter.</p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse">
+                    <thead>
+                      <tr className="border-b border-gray-200 bg-gray-50">
+                        {columns.map(col => (
+                          <th key={col} className={`whitespace-nowrap px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 ${isAmountColumn(col) ? 'text-right' : 'text-left'}`}>
+                            {formatHeader(col)}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {pagedRows.map((row, i) => (
+                        <tr key={i} className="hover:bg-gray-50 transition-colors">
+                          {columns.map((col, ci) => (
+                            <td
+                              key={col}
+                              className={`px-5 py-3 text-sm ${isAmountColumn(col) ? 'text-right tabular-nums font-medium text-gray-800' : ci === 0 ? 'font-medium text-gray-900' : 'text-gray-600'}`}
+                              title={formatValue(row[col], isAmountColumn(col))}
+                            >
+                              {formatValue(row[col], isAmountColumn(col))}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                    {columns.some(col => columnTotal(filteredRows, col) !== null) && (
+                      <tfoot>
+                        <tr className="border-t-2 border-gray-200 bg-gray-50">
+                          {columns.map((col, i) => {
+                            const total = columnTotal(filteredRows, col)
+                            return (
+                              <td key={col} className={`px-5 py-3 text-sm font-bold text-gray-900 ${isAmountColumn(col) ? 'text-right tabular-nums' : ''}`}>
+                                {i === 0 ? 'Total' : total !== null ? formatValue(total, isAmountColumn(col)) : ''}
+                              </td>
+                            )
+                          })}
+                        </tr>
+                      </tfoot>
+                    )}
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between border-t border-gray-100 px-6 py-3">
+                    <p className="text-xs text-gray-400">
+                      Page {currentPage} of {totalPages} &middot; {filteredRows.length} rows
+                    </p>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(1)}
+                        className="rounded px-2 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100 disabled:opacity-30"
+                      >«</button>
+                      <button
+                        type="button"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(p => p - 1)}
+                        className="rounded px-2 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100 disabled:opacity-30"
+                      >‹</button>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                        .reduce<(number | '…')[]>((acc, p, idx, arr) => {
+                          if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('…')
+                          acc.push(p)
+                          return acc
+                        }, [])
+                        .map((p, idx) =>
+                          p === '…'
+                            ? <span key={`ellipsis-${idx}`} className="px-1 text-xs text-gray-400">…</span>
+                            : (
+                              <button
+                                key={p}
+                                type="button"
+                                onClick={() => setCurrentPage(p as number)}
+                                className="rounded px-2.5 py-1 text-xs font-medium transition-colors"
+                                style={p === currentPage
+                                  ? { backgroundColor: accentColor, color: '#fff' }
+                                  : { color: '#6b7280' }}
+                              >{p}</button>
+                            )
+                        )}
+                      <button
+                        type="button"
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(p => p + 1)}
+                        className="rounded px-2 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100 disabled:opacity-30"
+                      >›</button>
+                      <button
+                        type="button"
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(totalPages)}
+                        className="rounded px-2 py-1 text-xs font-medium text-gray-500 hover:bg-gray-100 disabled:opacity-30"
+                      >»</button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </section>
+        </main>
       </div>
     </div>
   )
