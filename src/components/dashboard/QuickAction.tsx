@@ -31,19 +31,25 @@ function QuickActionButton({ label, icon: Icon, onClick }: QuickActionButtonProp
   )
 }
 
-export function QuickAction({ className }: { className?: string }) {
+interface QuickActionProps {
+  className?: string
+  onCashDeposit?: () => void
+  onCashWithdraw?: () => void
+}
+
+export function QuickAction({ className, onCashDeposit, onCashWithdraw }: QuickActionProps) {
   const navigate = useNavigate()
 
-  const actions: { label: string; icon: LucideIcon; route: string }[] = [
-    { label: 'Transactions',      icon: ArrowRightLeft,  route: ROUTES.TRANSACTIONS },
-    { label: 'Cash Deposits',     icon: ArrowDownToLine, route: ROUTES.TRANSACTIONS },
-    { label: 'Cash Withdrawal',   icon: ArrowUpFromLine, route: ROUTES.TRANSACTIONS },
-    { label: 'Clients',           icon: Users,           route: ROUTES.CLIENTS.LIST },
-    { label: 'Products',          icon: Package,         route: ROUTES.PRODUCTS.LIST },
-    { label: 'Reports',           icon: FileText,        route: ROUTES.REPORTS.ROOT },
-    { label: 'Offices',           icon: Building2,       route: ROUTES.ADMINISTRATION.OFFICES },
-    { label: 'User Management',   icon: UserCog,         route: ROUTES.ADMINISTRATION.USERS },
-    { label: 'Chart Of Accounts', icon: PieChart,        route: ROUTES.ACCOUNTING.CHART },
+  const actions: { label: string; icon: LucideIcon; onClick: () => void }[] = [
+    { label: 'Transactions',      icon: ArrowRightLeft,  onClick: () => navigate(ROUTES.TRANSACTIONS) },
+    { label: 'Cash Deposits',     icon: ArrowDownToLine, onClick: () => onCashDeposit?.() },
+    { label: 'Cash Withdrawal',   icon: ArrowUpFromLine, onClick: () => onCashWithdraw?.() },
+    { label: 'Clients',           icon: Users,           onClick: () => navigate(ROUTES.CLIENTS.LIST) },
+    { label: 'Products',          icon: Package,         onClick: () => navigate(ROUTES.PRODUCTS.LIST) },
+    { label: 'Reports',           icon: FileText,        onClick: () => navigate(ROUTES.REPORTS.ROOT) },
+    { label: 'Offices',           icon: Building2,       onClick: () => navigate(ROUTES.ADMINISTRATION.OFFICES) },
+    { label: 'User Management',   icon: UserCog,         onClick: () => navigate(ROUTES.ADMINISTRATION.USERS) },
+    { label: 'Chart Of Accounts', icon: PieChart,        onClick: () => navigate(ROUTES.ACCOUNTING.CHART) },
   ]
 
   const rows = [
@@ -63,7 +69,7 @@ export function QuickAction({ className }: { className?: string }) {
                 key={action.label}
                 label={action.label}
                 icon={action.icon}
-                onClick={() => navigate(action.route)}
+                onClick={action.onClick}
               />
             ))}
           </div>

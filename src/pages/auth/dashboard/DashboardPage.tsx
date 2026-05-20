@@ -223,6 +223,8 @@ export default function DashboardPage() {
         </div>
 
       </div>
+
+      <CashTransactionDrawer type={cashTxType} onClose={() => setCashTxType(null)} />
     </div>
   )
 }
