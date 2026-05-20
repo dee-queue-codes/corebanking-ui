@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 interface AccountInfo {
   accountNo: string
+  clientName: string
   currency: string
   balance: number
   status: string
@@ -75,12 +76,21 @@ export function CashTransactionDrawer({ type, onClose }: Props) {
         : body
       const a = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>
       const accNo = String(a.accountNo ?? a.accountNumber ?? num)
+      const clientName = (() => {
+        if (typeof a.clientName === 'string' && a.clientName) return a.clientName
+        if (a.client && typeof a.client === 'object') {
+          const c = a.client as Record<string, unknown>
+          return String(c.displayName ?? c.name ?? c.fullName ?? '')
+        }
+        return ''
+      })()
       setAccount({
-        accountNo: accNo,
-        currency:  String(a.currency ?? 'GHS'),
-        balance:   Number(a.balance ?? a.accountBalance ?? a.availableBalance ?? 0),
-        status:    String((a.status && typeof a.status === 'object' ? (a.status as Record<string,unknown>).value : a.status) ?? ''),
-        type:      String((a.savingsProduct && typeof a.savingsProduct === 'object' ? (a.savingsProduct as Record<string,unknown>).name : a.accountType ?? a.type) ?? ''),
+        accountNo:  accNo,
+        clientName,
+        currency:   String(a.currency ?? 'GHS'),
+        balance:    Number(a.balance ?? a.accountBalance ?? a.availableBalance ?? 0),
+        status:     String((a.status && typeof a.status === 'object' ? (a.status as Record<string,unknown>).value : a.status) ?? ''),
+        type:       String((a.savingsProduct && typeof a.savingsProduct === 'object' ? (a.savingsProduct as Record<string,unknown>).name : a.accountType ?? a.type) ?? ''),
       })
     } catch {
       setLookupError('Account not found.')
@@ -97,7 +107,7 @@ export function CashTransactionDrawer({ type, onClose }: Props) {
     setSubmitting(true)
     setError('')
     try {
-      const payload = { amount: amt, narration: narration.trim() || (isDeposit ? 'Cash deposit' : 'Cash withdrawal') }
+      const payload = { transactionAmount: amt, narration: narration.trim() || (isDeposit ? 'Cash deposit' : 'Cash withdrawal') }
       if (isDeposit) {
         await clientTransactionsAPI.deposit(account.accountNo, payload)
       } else {
@@ -187,6 +197,12 @@ export function CashTransactionDrawer({ type, onClose }: Props) {
               {/* Account info */}
               {account && (
                 <div className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 space-y-1.5">
+                  {account.clientName && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-400">Name</span>
+                      <span className="font-semibold text-gray-800">{account.clientName}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-400">Account</span>
                     <span className="font-mono font-semibold text-gray-800">{account.accountNo}</span>
