@@ -195,6 +195,8 @@ export default function AccountLookupPage() {
   const [txLoading, setTxLoading]         = useState(false)
   const [txError, setTxError]             = useState('')
   const [entryFilter, setEntryFilter]     = useState<'ALL' | 'CREDIT' | 'DEBIT'>('ALL')
+  const [txPage, setTxPage]               = useState(1)
+  const TX_PAGE_SIZE = 10
   const [showActionsDropdown, setShowActionsDropdown] = useState(false)
 
   const [showCreditDialog, setShowCreditDialog]     = useState(false)
@@ -587,6 +589,9 @@ export default function AccountLookupPage() {
     ? transactions
     : transactions.filter(tx => tx.entryType?.toUpperCase() === entryFilter)
 
+  const txTotalPages = Math.max(1, Math.ceil(filteredTxs.length / TX_PAGE_SIZE))
+  const pagedTxs     = filteredTxs.slice((txPage - 1) * TX_PAGE_SIZE, txPage * TX_PAGE_SIZE)
+
   const totalCredits = transactions.filter(tx => tx.entryType?.toUpperCase() === 'CREDIT').reduce((s, t) => s + t.amount, 0)
   const totalDebits  = transactions.filter(tx => tx.entryType?.toUpperCase() === 'DEBIT').reduce((s, t) => s + t.amount, 0)
   const isActive     = account?.status?.toLowerCase() === 'active'
@@ -623,20 +628,6 @@ export default function AccountLookupPage() {
                 Search an account number to view details and transaction history
               </p>
             </div>
-            <button
-              onClick={() => { setCreateError(''); setCreateSuccess(''); setCreateSearch(''); setCreateClientResults([]); setCreateSelectedClient(null); setShowCreateDialog(true) }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 7,
-                padding: '8px 18px', fontSize: 12, fontWeight: 600, color: '#fff',
-                background: T.navy, border: 'none',
-                borderRadius: 8, cursor: 'pointer', transition: 'background 0.15s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = T.navyDark }}
-              onMouseLeave={e => { e.currentTarget.style.background = T.navy }}
-            >
-              <Plus style={{ width: 13, height: 13 }} />
-              Create Account
-            </button>
           </div>
 
           {/* Search bar */}
@@ -750,14 +741,6 @@ export default function AccountLookupPage() {
                         {accountActionLoading ? 'Activating...' : 'Activate'}
                       </button>
                     )}
-                    <button onClick={() => { setCreateError(''); setCreateSuccess(''); setShowCreateDialog(true) }}
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 20, border: 'none', background: 'rgba(255,255,255,0.15)', color: '#fff', fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.25)')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.15)')}
-                    >
-                      <Plus style={{ width: 11, height: 11 }} />
-                      Create Account
-                    </button>
                   </div>
                 </div>
               </div>
@@ -899,7 +882,7 @@ export default function AccountLookupPage() {
                   {(['ALL', 'CREDIT', 'DEBIT'] as const).map(f => (
                     <button
                       key={f}
-                      onClick={() => setEntryFilter(f)}
+                      onClick={() => { setEntryFilter(f); setTxPage(1) }}
                       style={{
                         fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: entryFilter === f ? 600 : 400,
                         color: entryFilter === f ? '#fff' : T.textSub,
@@ -952,7 +935,7 @@ export default function AccountLookupPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTxs.map(tx => (
+                  {pagedTxs.map(tx => (
                     <tr
                       key={tx.id}
                       style={{ borderBottom: `1px solid ${T.border}`, transition: 'background 0.1s' }}
@@ -988,6 +971,37 @@ export default function AccountLookupPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
+            )}
+
+            {/* Pagination */}
+            {txTotalPages > 1 && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 22px', borderTop: `1px solid ${T.border}` }}>
+                <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: T.textMuted, margin: 0 }}>
+                  Page {txPage} of {txTotalPages} &middot; {filteredTxs.length} transactions
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <button onClick={() => setTxPage(1)} disabled={txPage === 1}
+                    style={{ padding: '4px 8px', borderRadius: 6, border: `1px solid ${T.border}`, background: '#fff', fontSize: 12, color: txPage === 1 ? '#CBD5E1' : T.text, cursor: txPage === 1 ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>«</button>
+                  <button onClick={() => setTxPage(p => p - 1)} disabled={txPage === 1}
+                    style={{ padding: '4px 8px', borderRadius: 6, border: `1px solid ${T.border}`, background: '#fff', fontSize: 12, color: txPage === 1 ? '#CBD5E1' : T.text, cursor: txPage === 1 ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>‹</button>
+                  {Array.from({ length: txTotalPages }, (_, i) => i + 1)
+                    .filter(p => p === 1 || p === txTotalPages || Math.abs(p - txPage) <= 1)
+                    .reduce<(number | '...')[]>((acc, p, idx, arr) => {
+                      if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('...')
+                      acc.push(p)
+                      return acc
+                    }, [])
+                    .map((p, idx) => p === '...'
+                      ? <span key={`e-${idx}`} style={{ padding: '0 4px', fontSize: 12, color: T.textMuted }}>…</span>
+                      : <button key={p} onClick={() => setTxPage(p as number)}
+                          style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${txPage === p ? T.navy : T.border}`, background: txPage === p ? T.navy : '#fff', color: txPage === p ? '#fff' : T.text, fontSize: 12, fontWeight: txPage === p ? 600 : 400, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>{p}</button>
+                    )}
+                  <button onClick={() => setTxPage(p => p + 1)} disabled={txPage === txTotalPages}
+                    style={{ padding: '4px 8px', borderRadius: 6, border: `1px solid ${T.border}`, background: '#fff', fontSize: 12, color: txPage === txTotalPages ? '#CBD5E1' : T.text, cursor: txPage === txTotalPages ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>›</button>
+                  <button onClick={() => setTxPage(txTotalPages)} disabled={txPage === txTotalPages}
+                    style={{ padding: '4px 8px', borderRadius: 6, border: `1px solid ${T.border}`, background: '#fff', fontSize: 12, color: txPage === txTotalPages ? '#CBD5E1' : T.text, cursor: txPage === txTotalPages ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>»</button>
+                </div>
               </div>
             )}
           </div>

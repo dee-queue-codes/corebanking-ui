@@ -206,7 +206,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             {nav('administrations', <UserCog style={{ width: 15, height: 15 }} />,    'Administrations', true)}
             {nav('reports',         <FileText style={{ width: 15, height: 15 }} />,   'Reports')}
             {nav('accounting',      <Calculator style={{ width: 15, height: 15 }} />, 'Accounting', true)}
-            {nav('settings',        <Settings style={{ width: 15, height: 15 }} />,   'Settings')}
+            {nav('settings',        <Settings style={{ width: 15, height: 15 }} />,   'Settings', true)}
           </div>
         </div>
       </div>

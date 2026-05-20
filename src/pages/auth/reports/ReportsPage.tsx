@@ -192,7 +192,19 @@ const categories: Category[] = [
           const record = payload as Record<string, unknown>
           const accounts = Array.isArray(record.accounts) ? record.accounts as Record<string, unknown>[] : []
           if (accounts.length === 0) return toRows(payload)
-          return accounts
+          return accounts.flatMap(acc => {
+            const txs = Array.isArray(acc.transactions) ? acc.transactions as Record<string, unknown>[] : []
+            if (txs.length === 0) return []
+            return txs.map(tx => ({
+              date:           tx.date,
+              type:           tx.type,
+              entryType:      tx.entryType,
+              amount:         tx.amount,
+              runningBalance: tx.runningBalance,
+              narration:      tx.narration ?? tx.note ?? '-',
+              reversed:       tx.reversed ? 'Yes' : 'No',
+            }))
+          })
         },
       },
     ],
@@ -499,7 +511,8 @@ export default function ReportsPage() {
         </aside>
 
         {/* ── Right content ── */}
-        <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden p-6">
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto p-6">
+          <div className="flex flex-col gap-4">
 
           {/* Filter bar */}
           <div className="flex items-end justify-between gap-4 rounded-2xl border border-gray-100 bg-white px-5 py-4">
@@ -565,7 +578,7 @@ export default function ReportsPage() {
           )}
 
           {/* Results table */}
-          <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white">
+          <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white">
             {/* Table header bar */}
             <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
               <div>
@@ -645,7 +658,7 @@ export default function ReportsPage() {
               </div>
             ) : (
               <>
-                <div className="min-h-0 flex-1 overflow-x-auto overflow-y-auto">
+                <div className="overflow-x-auto">
                   <table className="w-full border-collapse">
                     <thead className="sticky top-0 z-10">
                       <tr className="border-b border-gray-200 bg-gray-50">
@@ -813,6 +826,7 @@ export default function ReportsPage() {
               </>
             )}
           </section>
+          </div>
         </main>
       </div>
     </div>
