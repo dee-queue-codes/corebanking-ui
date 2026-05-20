@@ -603,29 +603,23 @@ export default function AccountLookupPage() {
 
       <div style={{ padding: '24px 24px 40px' }}>
 
-      {/* ── Hero ── */}
+      {/* ── Hero — white ── */}
       <div style={{
-        background: 'linear-gradient(135deg, #001844 0%, #002663 60%, #1a4080 100%)',
-        borderRadius: 16, overflow: 'hidden', position: 'relative', marginBottom: 20,
+        background: T.surface, borderRadius: 16, border: `1px solid ${T.border}`,
+        boxShadow: T.shadow, overflow: 'hidden', marginBottom: 20,
       }}>
-        <div style={{ height: 3, background: 'linear-gradient(90deg, #1565C0, #1976D2, #1565C0)' }} />
-        <div style={{
-          position: 'absolute', inset: 0, top: 3, pointerEvents: 'none',
-          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0)',
-          backgroundSize: '20px 20px',
-        }} />
-        <div style={{ padding: '28px 32px', position: 'relative' }}>
+        <div style={{ padding: '24px 28px' }}>
 
           {/* Title + button */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
             <div>
-              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(201,168,76,0.9)', marginBottom: 6 }}>
+              <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: T.textMuted, marginBottom: 5 }}>
                 Chelsea Bank
               </p>
-              <h1 className="alp-sora" style={{ margin: 0, fontSize: 26, fontWeight: 700, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1 }}>
+              <h1 className="alp-sora" style={{ margin: 0, fontSize: 24, fontWeight: 800, color: T.text, letterSpacing: '-0.02em', lineHeight: 1 }}>
                 Account Lookup
               </h1>
-              <p style={{ margin: '8px 0 0', fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: 400 }}>
+              <p style={{ margin: '6px 0 0', fontSize: 13, color: T.textSub }}>
                 Search an account number to view details and transaction history
               </p>
             </div>
@@ -634,11 +628,11 @@ export default function AccountLookupPage() {
               style={{
                 display: 'flex', alignItems: 'center', gap: 7,
                 padding: '8px 18px', fontSize: 12, fontWeight: 600, color: '#fff',
-                background: 'transparent', border: '1px solid rgba(255,255,255,0.5)',
-                borderRadius: 8, cursor: 'pointer', transition: 'background 0.15s, border-color 0.15s',
+                background: T.navy, border: 'none',
+                borderRadius: 8, cursor: 'pointer', transition: 'background 0.15s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.8)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = T.navyDark }}
+              onMouseLeave={e => { e.currentTarget.style.background = T.navy }}
             >
               <Plus style={{ width: 13, height: 13 }} />
               Create Account
@@ -649,22 +643,22 @@ export default function AccountLookupPage() {
           <form onSubmit={handleSearch}>
             <div style={{ display: 'flex', gap: 10, maxWidth: 580 }}>
               <div style={{ position: 'relative', flex: 1 }}>
-                <Wallet style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 15, height: 15, color: 'rgba(255,255,255,0.45)', pointerEvents: 'none' }} />
+                <Wallet style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 15, height: 15, color: T.textMuted, pointerEvents: 'none' }} />
                 <input
                   type="text"
                   value={inputValue}
                   onChange={e => setInputValue(e.target.value)}
-                  placeholder="Enter account number, e.g. 0010020000021"
+                  placeholder="Enter account number"
                   className="alp-mono"
                   style={{
                     width: '100%', boxSizing: 'border-box',
                     padding: '12px 16px 12px 44px',
-                    fontSize: 14, color: '#fff', letterSpacing: '0.04em',
-                    background: 'rgba(255,255,255,0.1)', border: '1.5px solid rgba(255,255,255,0.2)',
-                    borderRadius: 10, outline: 'none', transition: 'border-color 0.15s, background 0.15s',
+                    fontSize: 14, color: T.text, letterSpacing: '0.04em',
+                    background: '#F5F8FE', border: `1.5px solid ${T.border}`,
+                    borderRadius: 10, outline: 'none', transition: 'border-color 0.15s, box-shadow 0.15s',
                   }}
-                  onFocus={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.55)'; e.currentTarget.style.background = 'rgba(255,255,255,0.15)' }}
-                  onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
+                  onFocus={e => { e.currentTarget.style.borderColor = T.navy; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,38,99,0.08)' }}
+                  onBlur={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.boxShadow = 'none' }}
                 />
               </div>
               <button
@@ -672,13 +666,15 @@ export default function AccountLookupPage() {
                 disabled={searching || !inputValue.trim()}
                 style={{
                   padding: '12px 24px', borderRadius: 10, border: 'none',
-                  background: !searching && inputValue.trim() ? '#fff' : 'rgba(255,255,255,0.15)',
-                  color: !searching && inputValue.trim() ? '#002663' : 'rgba(255,255,255,0.45)',
+                  background: T.navy, color: '#fff',
                   fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: 700,
                   cursor: searching || !inputValue.trim() ? 'not-allowed' : 'pointer',
+                  opacity: searching || !inputValue.trim() ? 0.5 : 1,
                   display: 'flex', alignItems: 'center', gap: 8,
                   whiteSpace: 'nowrap', flexShrink: 0, transition: 'all 0.15s',
                 }}
+                onMouseEnter={e => { if (!searching && inputValue.trim()) e.currentTarget.style.background = T.navyDark }}
+                onMouseLeave={e => { e.currentTarget.style.background = T.navy }}
               >
                 {searching
                   ? <><RefreshCw style={{ width: 14, height: 14, animation: 'spin 0.9s linear infinite' }} /> Searching…</>
@@ -686,7 +682,7 @@ export default function AccountLookupPage() {
               </button>
             </div>
             {searchError && (
-              <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 8, background: 'rgba(254,242,242,0.12)', border: '1px solid rgba(254,202,202,0.25)', fontSize: 13, color: '#FCA5A5' }}>
+              <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 8, background: '#FEF2F2', border: '1px solid #FECACA', fontSize: 13, color: '#DC2626' }}>
                 {searchError}
               </div>
             )}
@@ -698,79 +694,66 @@ export default function AccountLookupPage() {
       {account && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-          {/* Account card — white */}
-          <div style={{ background: T.surface, borderRadius: 16, border: `1px solid ${T.border}`, boxShadow: T.shadow, overflow: 'hidden' }}>
-            <div style={{ padding: '24px 28px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
+          {/* Account card — navy */}
+          <div style={{
+            background: `linear-gradient(135deg, ${T.navyDark} 0%, ${T.navy} 55%, ${T.navyLight} 100%)`,
+            borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(0,38,99,0.22)', position: 'relative',
+          }}>
+            <div style={{ height: 3, background: 'linear-gradient(90deg, #1565C0, #1976D2, #1565C0)' }} />
+            <div style={{
+              position: 'absolute', inset: 0, top: 3, pointerEvents: 'none',
+              backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0)',
+              backgroundSize: '22px 22px',
+            }} />
+            <div style={{ padding: '28px 32px', position: 'relative' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
                 <div>
-                  <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.textMuted, margin: '0 0 5px' }}>Account Number</p>
-                  <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 26, fontWeight: 700, color: T.text, margin: 0, letterSpacing: '0.04em' }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(180,200,255,0.7)', margin: '0 0 6px' }}>Account Number</p>
+                  <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 26, fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '0.04em' }}>
                     {account.accountNo}
                   </p>
-                  <p style={{ fontSize: 13, color: T.textSub, margin: '5px 0 0' }}>{account.productName}</p>
+                  <p style={{ fontSize: 13, color: 'rgba(200,215,255,0.75)', margin: '6px 0 0' }}>{account.productName}</p>
                 </div>
-                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-                  <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.textMuted, margin: 0 }}>Current Balance</p>
-                  <p style={{ fontFamily: 'Sora, sans-serif', fontSize: 30, fontWeight: 800, color: T.text, margin: 0, lineHeight: 1 }}>
+                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(180,200,255,0.7)', margin: 0 }}>Current Balance</p>
+                  <p style={{ fontFamily: 'Sora, sans-serif', fontSize: 32, fontWeight: 800, color: '#fff', margin: 0, lineHeight: 1 }}>
                     {account.currency} {account.balance.toFixed(2)}
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{
                       display: 'inline-flex', alignItems: 'center', gap: 5,
-                      padding: '4px 12px', borderRadius: 20,
-                      fontSize: 11, fontWeight: 600,
-                      background: isActive ? T.successBg : '#FFFBEB',
-                      color: isActive ? T.success : '#B45309',
-                      border: `1px solid ${isActive ? '#A7F3D0' : '#FCD34D'}`,
+                      padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700,
+                      background: isActive ? 'rgba(16,185,129,0.2)' : 'rgba(217,119,6,0.18)',
+                      color: isActive ? '#A7F3D0' : '#FCD34D',
+                      border: `1px solid ${isActive ? 'rgba(167,243,208,0.35)' : 'rgba(252,211,77,0.35)'}`,
                     }}>
-                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: isActive ? T.success : '#F59E0B' }} />
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: isActive ? '#34D399' : '#FBBF24' }} />
                       {account.status}
                     </span>
                     {isPending && (
-                      <button
-                        type="button"
-                        disabled={accountActionLoading}
-                        onClick={handleApproveLookedUpAccount}
-                        style={{
-                          display: 'inline-flex', alignItems: 'center', gap: 6,
-                          padding: '4px 12px', borderRadius: 20, border: `1px solid #BFDBFE`,
-                          background: '#EFF6FF', color: '#2563EB',
-                          fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: 600,
-                          cursor: accountActionLoading ? 'not-allowed' : 'pointer',
-                          opacity: accountActionLoading ? 0.65 : 1,
-                        }}
+                      <button type="button" disabled={accountActionLoading} onClick={handleApproveLookedUpAccount}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 20, border: 'none', background: 'rgba(37,99,235,0.28)', color: '#BFDBFE', fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: 600, cursor: accountActionLoading ? 'not-allowed' : 'pointer', opacity: accountActionLoading ? 0.65 : 1 }}
+                        onMouseEnter={e => { if (!accountActionLoading) e.currentTarget.style.background = 'rgba(37,99,235,0.4)' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(37,99,235,0.28)' }}
                       >
                         <ArrowDownToLine style={{ width: 11, height: 11 }} />
                         {accountActionLoading ? 'Approving...' : 'Approve'}
                       </button>
                     )}
                     {isApproved && (
-                      <button
-                        type="button"
-                        disabled={accountActionLoading}
-                        onClick={handleActivateLookedUpAccount}
-                        style={{
-                          display: 'inline-flex', alignItems: 'center', gap: 6,
-                          padding: '4px 12px', borderRadius: 20, border: `1px solid #A7F3D0`,
-                          background: T.successBg, color: T.success,
-                          fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: 600,
-                          cursor: accountActionLoading ? 'not-allowed' : 'pointer',
-                          opacity: accountActionLoading ? 0.65 : 1,
-                        }}
+                      <button type="button" disabled={accountActionLoading} onClick={handleActivateLookedUpAccount}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 20, border: 'none', background: 'rgba(16,185,129,0.2)', color: '#A7F3D0', fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: 600, cursor: accountActionLoading ? 'not-allowed' : 'pointer', opacity: accountActionLoading ? 0.65 : 1 }}
+                        onMouseEnter={e => { if (!accountActionLoading) e.currentTarget.style.background = 'rgba(16,185,129,0.32)' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(16,185,129,0.2)' }}
                       >
                         <ArrowUpFromLine style={{ width: 11, height: 11 }} />
                         {accountActionLoading ? 'Activating...' : 'Activate'}
                       </button>
                     )}
-                    <button
-                      onClick={() => { setCreateError(''); setCreateSuccess(''); setShowCreateDialog(true) }}
-                      style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 6,
-                        padding: '4px 12px', borderRadius: 20, border: `1px solid ${T.border}`,
-                        background: '#F5F8FE', color: T.text,
-                        fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: 600,
-                        cursor: 'pointer',
-                      }}
+                    <button onClick={() => { setCreateError(''); setCreateSuccess(''); setShowCreateDialog(true) }}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 20, border: 'none', background: 'rgba(255,255,255,0.15)', color: '#fff', fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: 600, cursor: 'pointer' }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.25)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.15)')}
                     >
                       <Plus style={{ width: 11, height: 11 }} />
                       Create Account
@@ -780,22 +763,22 @@ export default function AccountLookupPage() {
               </div>
 
               {/* Meta row */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', paddingTop: 18, borderTop: `1px solid ${T.border}` }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                 {[
                   { label: 'Client ID',      value: account.clientId,      mono: true  },
                   { label: 'Client Name',     value: account.clientName,    mono: false },
                   { label: 'Activation Date', value: account.activatedDate, mono: false },
                 ].map((f, i) => (
-                  <div key={f.label} style={{ borderRight: i < 2 ? `1px solid ${T.border}` : 'none', paddingRight: 24, paddingLeft: i > 0 ? 24 : 0 }}>
-                    <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: T.textMuted, margin: '0 0 5px' }}>{f.label}</p>
-                    <p style={{ fontFamily: f.mono ? 'DM Mono, monospace' : 'DM Sans, sans-serif', fontSize: 13, fontWeight: 600, color: T.text, margin: 0 }}>
+                  <div key={f.label} style={{ borderRight: i < 2 ? '1px solid rgba(255,255,255,0.1)' : 'none', paddingRight: 24, paddingLeft: i > 0 ? 24 : 0 }}>
+                    <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(180,200,255,0.6)', margin: '0 0 5px' }}>{f.label}</p>
+                    <p style={{ fontFamily: f.mono ? 'DM Mono, monospace' : 'DM Sans, sans-serif', fontSize: 13, fontWeight: 600, color: '#fff', margin: 0 }}>
                       {f.value || '—'}
                     </p>
                   </div>
                 ))}
               </div>
               {accountActionError && (
-                <div style={{ marginTop: 14, padding: '10px 14px', borderRadius: 8, background: '#FEF2F2', border: '1px solid #FECACA', fontSize: 12, color: '#DC2626' }}>
+                <div style={{ marginTop: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(254,242,242,0.12)', border: '1px solid rgba(254,202,202,0.35)', fontSize: 12, color: '#FECACA' }}>
                   {accountActionError}
                 </div>
               )}
