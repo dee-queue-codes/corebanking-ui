@@ -18,7 +18,7 @@ const T = {
   navy:      '#002663',
   navyDark:  '#001844',
   navyLight: '#1a4080',
-  gold:      '#C9A84C',
+  gold:      '#1565C0',
   bg:        '#EEF2F8',
   surface:   '#FFFFFF',
   border:    '#DDE4EF',
@@ -310,23 +310,28 @@ export default function AccountLookupPage() {
 
   const handleCreateClientSearch = async (e: React.FormEvent) => {
     e.preventDefault()
-    const val = createSearch.trim().toLowerCase()
+    const val = createSearch.trim()
     if (!val) return
     setCreateSearching(true)
     setCreateError('')
     setCreateClientResults([])
     setCreateSelectedClient(null)
     try {
-      // If looks like an account number, resolve it to a client directly
+      // If looks like a client ID, look up directly
       if (/^\d+$/.test(val)) {
         try {
-          const res = await accountsAPI.getByAccountNumber(val, skipAuth)
-          const acc = mapAccount(unwrap(res.data))
-          if (acc.clientId) {
-            setCreateSelectedClient({ id: acc.clientId, name: acc.clientName || acc.clientId })
-            setCreateSearching(false)
-            return
+          const res = await clientsAPI.getById(val, skipAuth)
+          const raw = (res.data as Record<string, unknown>)
+          const d = (raw.data ?? raw) as Record<string, unknown>
+          const id = text(d.id) || text(d.clientId) || val
+          const getName = () => {
+            const display = text(d.displayName) || text(d.name)
+            if (display) return display
+            return [text(d.firstName), text(d.middleName), text(d.lastName)].filter(Boolean).join(' ') || id
           }
+          setCreateSelectedClient({ id, name: getName() })
+          setCreateSearching(false)
+          return
         } catch { /* fall through to name search */ }
       }
       // Fetch all clients, filter client-side (same as ClientsPage)
@@ -357,7 +362,7 @@ export default function AccountLookupPage() {
 
       const matched = items
         .map(c => ({ id: text(c.id) || text(c.clientId), name: getName(c) }))
-        .filter(c => c.id && c.name.toLowerCase().includes(val))
+        .filter(c => c.id && c.name.toLowerCase().includes(val.toLowerCase()))
 
       if (matched.length === 0) {
         setCreateError(`No clients found matching "${createSearch.trim()}".`)
@@ -1139,7 +1144,7 @@ export default function AccountLookupPage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle style={{ fontFamily: 'Sora, sans-serif' }}>Create Savings Account</DialogTitle>
-            <DialogDescription>Search for a client by name or account number, then select a savings product.</DialogDescription>
+            <DialogDescription>Search for a client by name or client ID, then select a savings product.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -1153,7 +1158,7 @@ export default function AccountLookupPage() {
                     type="text"
                     value={createSearch}
                     onChange={e => { setCreateSearch(e.target.value); setCreateClientResults([]); setCreateSelectedClient(null) }}
-                    placeholder="Name or account number…"
+                    placeholder="Client name or client ID…"
                     style={{
                       width: '100%', boxSizing: 'border-box',
                       padding: '9px 12px 9px 32px',
