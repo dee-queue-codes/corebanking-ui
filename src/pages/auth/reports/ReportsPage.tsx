@@ -434,21 +434,17 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="min-h-full bg-[#f8f9fc]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      <div className="flex min-h-full">
+    <div className="flex h-full flex-col bg-[#f8f9fc]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      <div className="flex h-full">
 
-        {/* ── Left sidebar ── */}
-        <aside className="flex w-72 shrink-0 flex-col gap-5 border-r border-gray-200 bg-white p-6">
-
-          {/* Header */}
+        {/* ── Right sidebar ── */}
+        <aside className="order-last flex w-72 shrink-0 flex-col gap-5 border-l border-gray-200 bg-white p-6 overflow-y-auto">
           <div>
-            <h1 className="text-lg font-extrabold tracking-tight text-gray-900">Reports</h1>
+            <h1 className="text-base font-extrabold tracking-tight text-gray-900">Reports</h1>
             <p className="mt-0.5 text-xs font-medium text-gray-400">Run contribution, branch, and account reports</p>
           </div>
-
-          {/* Actions */}
           <div className="flex flex-col gap-2">
-            <Button type="button" size="sm" onClick={runReport} disabled={loading} className="w-full bg-[#002663] text-xs text-white hover:bg-[#001f52]">
+            <Button type="button" size="lg" onClick={runReport} disabled={loading} className="w-full bg-[#002663] text-base font-bold text-white hover:bg-[#001f52]">
               {loading ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5 shrink-0" />}
               Run Report
             </Button>
@@ -457,7 +453,7 @@ export default function ReportsPage() {
             </Button>
           </div>
 
-          {/* Category tabs */}
+          {/* Category */}
           <div className="flex flex-col gap-1">
             <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">Category</p>
             {categories.map(cat => {
@@ -480,7 +476,7 @@ export default function ReportsPage() {
             })}
           </div>
 
-          {/* Sub-report select */}
+          {/* Report Type */}
           {currentCategory.reports.length > 1 && (
             <div className="flex flex-col gap-1">
               <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">Report Type</p>
@@ -502,87 +498,76 @@ export default function ReportsPage() {
               })}
             </div>
           )}
-
-          {/* Filter fields */}
-          <div className="flex flex-col gap-4">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Filters</p>
-            {selectedReport.fields.includes('dateRange') && (
-              <>
-                <div>
-                  <Label className="mb-1.5 block text-xs font-medium text-gray-500">Start Date</Label>
-                  <Input type="date" value={filters.startDate} onChange={e => setFilters(p => ({ ...p, startDate: e.target.value }))} />
-                </div>
-                <div>
-                  <Label className="mb-1.5 block text-xs font-medium text-gray-500">End Date</Label>
-                  <Input type="date" value={filters.endDate} onChange={e => setFilters(p => ({ ...p, endDate: e.target.value }))} />
-                </div>
-              </>
-            )}
-            {selectedReport.fields.includes('officeId') && (
-              <div>
-                <Label className="mb-1.5 block text-xs font-medium text-gray-500">Office / Branch</Label>
-                <select
-                  value={filters.officeId}
-                  onChange={e => setFilters(p => ({ ...p, officeId: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Select office</option>
-                  {offices.map(o => (
-                    <option key={o.id} value={String(o.id)}>{o.name}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-            {selectedReport.fields.includes('accountNumber') && (
-              <div>
-                <Label className="mb-1.5 block text-xs font-medium text-gray-500">Account Number</Label>
-                <Input value={filters.accountNumber} onChange={e => setFilters(p => ({ ...p, accountNumber: e.target.value }))} placeholder="1000234501" className="font-mono" />
-              </div>
-            )}
-            {selectedReport.fields.includes('memberId') && (
-              <div>
-                <Label className="mb-1.5 block text-xs font-medium text-gray-500">Member ID</Label>
-                <Input value={filters.memberId} onChange={e => setFilters(p => ({ ...p, memberId: e.target.value }))} placeholder="Optional" />
-              </div>
-            )}
-            {selectedReport.fields.includes('window') && (
-              <div>
-                <Label className="mb-1.5 block text-xs font-medium text-gray-500">Reporting Window</Label>
-                <select
-                  value={filters.window}
-                  onChange={e => setFilters(p => ({ ...p, window: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {WINDOW_OPTIONS.map(o => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-            {selectedReport.fields.includes('window') && filters.window === 'CUSTOM_RANGE' && (
-              <>
-                <div>
-                  <Label className="mb-1.5 block text-xs font-medium text-gray-500">From Date</Label>
-                  <Input type="date" value={filters.startDate} onChange={e => setFilters(p => ({ ...p, startDate: e.target.value }))} />
-                </div>
-                <div>
-                  <Label className="mb-1.5 block text-xs font-medium text-gray-500">To Date</Label>
-                  <Input type="date" value={filters.endDate} onChange={e => setFilters(p => ({ ...p, endDate: e.target.value }))} />
-                </div>
-              </>
-            )}
-          </div>
         </aside>
 
         {/* ── Right content ── */}
-        <main className="flex min-w-0 flex-1 flex-col gap-4 p-6">
+        <main className="flex min-w-0 flex-1 flex-col gap-4 overflow-hidden p-6">
+
+          {/* Filter bar */}
+          <div className="flex items-end justify-between gap-4 rounded-2xl border border-gray-100 bg-white px-5 py-4">
+            <div>
+              <h2 className="text-xl font-black tracking-tight text-gray-900">Reports</h2>
+              <p className="mt-0.5 text-xs text-gray-400">Run contribution, branch, and account reports</p>
+            </div>
+            <div className="flex items-end gap-3">
+              {selectedReport.fields.includes('window') && (
+                <div>
+                  <Label className="mb-1.5 block text-xs font-medium text-gray-500">Window</Label>
+                  <select
+                    value={filters.window}
+                    onChange={e => setFilters(p => ({ ...p, window: e.target.value }))}
+                    className="w-36 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {WINDOW_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+              )}
+              {selectedReport.fields.includes('officeId') && (
+                <div>
+                  <Label className="mb-1.5 block text-xs font-medium text-gray-500">Office / Branch</Label>
+                  <select
+                    value={filters.officeId}
+                    onChange={e => setFilters(p => ({ ...p, officeId: e.target.value }))}
+                    className="w-40 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select office</option>
+                    {offices.map(o => <option key={o.id} value={String(o.id)}>{o.name}</option>)}
+                  </select>
+                </div>
+              )}
+              {selectedReport.fields.includes('accountNumber') && (
+                <div>
+                  <Label className="mb-1.5 block text-xs font-medium text-gray-500">Account Number</Label>
+                  <Input value={filters.accountNumber} onChange={e => setFilters(p => ({ ...p, accountNumber: e.target.value }))} placeholder="1000234501" className="w-40 font-mono" />
+                </div>
+              )}
+              {selectedReport.fields.includes('memberId') && (
+                <div>
+                  <Label className="mb-1.5 block text-xs font-medium text-gray-500">Member ID</Label>
+                  <Input value={filters.memberId} onChange={e => setFilters(p => ({ ...p, memberId: e.target.value }))} placeholder="Optional" className="w-32" />
+                </div>
+              )}
+              {(selectedReport.fields.includes('dateRange') || (selectedReport.fields.includes('window') && filters.window === 'CUSTOM_RANGE')) && (
+                <>
+                  <div>
+                    <Label className="mb-1.5 block text-xs font-medium text-gray-500">Start Date</Label>
+                    <Input type="date" value={filters.startDate} onChange={e => setFilters(p => ({ ...p, startDate: e.target.value }))} className="w-40" />
+                  </div>
+                  <div>
+                    <Label className="mb-1.5 block text-xs font-medium text-gray-500">End Date</Label>
+                    <Input type="date" value={filters.endDate} onChange={e => setFilters(p => ({ ...p, endDate: e.target.value }))} className="w-40" />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
 
           {error && (
             <div className="rounded-2xl border border-red-100 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">{error}</div>
           )}
 
           {/* Results table */}
-          <section className="flex flex-1 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white">
+          <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white">
             {/* Table header bar */}
             <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
               <div>
