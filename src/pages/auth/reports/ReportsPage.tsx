@@ -139,21 +139,15 @@ const categories: Category[] = [
           const record = payload as Record<string, unknown>
           const transactions = Array.isArray(record.transactions) ? record.transactions as Record<string, unknown>[] : []
           if (transactions.length === 0) return toRows(payload)
-          return transactions.map(t => {
-            const transfer = t.transfer as Record<string, unknown> | null | undefined
-            const paymentType = t.paymentType as Record<string, unknown> | null | undefined
-            return {
-              date: t.date,
-              type: t.type,
-              entryType: t.entryType,
-              amount: t.amount,
-              runningBalance: t.runningBalance,
-              narration: t.narration,
-              paymentType: paymentType?.name ?? '-',
-              description: transfer?.transferDescription ?? '-',
-              reversed: t.reversed ? 'Yes' : 'No',
-            }
-          })
+          return transactions.map(t => ({
+            date: t.date,
+            type: t.type,
+            entryType: t.entryType,
+            amount: t.amount,
+            runningBalance: t.runningBalance,
+            narration: t.narration ?? t.note ?? t.description ?? (t.transfer && typeof t.transfer === 'object' ? (t.transfer as Record<string,unknown>).transferDescription : undefined) ?? '-',
+            reversed: t.reversed ? 'Yes' : 'No',
+          }))
         },
       },
       {
@@ -251,7 +245,11 @@ function formatValue(value: unknown, asAmount = false): string {
   return String(value)
 }
 
+const NO_TOTAL_KEYWORDS = ['runningbalance', 'balance', 'runningbal']
+
 function columnTotal(rows: ReportRow[], col: string): number | null {
+  const lower = col.toLowerCase().replace(/[^a-z]/g, '')
+  if (NO_TOTAL_KEYWORDS.some(k => lower === k || lower.includes('running'))) return null
   if (!rows.every(r => typeof r[col] === 'number')) return null
   return rows.reduce((sum, r) => sum + Number(r[col]), 0)
 }
@@ -647,12 +645,12 @@ export default function ReportsPage() {
               </div>
             ) : (
               <>
-                <div className="overflow-x-auto">
+                <div className="flex-1 overflow-x-auto overflow-y-auto">
                   <table className="w-full border-collapse">
                     <thead>
                       <tr className="border-b border-gray-200 bg-gray-50">
                         {columns.map(col => (
-                          <th key={col} className={`whitespace-nowrap px-5 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-500 ${isAmountColumn(col) ? 'text-right' : 'text-left'}`}>
+                          <th key={col} className={`whitespace-nowrap px-5 py-4 text-[11px] font-semibold uppercase tracking-wider text-gray-500 ${isAmountColumn(col) ? 'text-right' : 'text-left'}`}>
                             {formatHeader(col)}
                           </th>
                         ))}
@@ -661,15 +659,70 @@ export default function ReportsPage() {
                     <tbody className="divide-y divide-gray-100">
                       {pagedRows.map((row, i) => (
                         <tr key={i} className="hover:bg-gray-50 transition-colors">
-                          {columns.map((col, ci) => (
-                            <td
-                              key={col}
-                              className={`px-5 py-3 text-sm ${isAmountColumn(col) ? 'text-right tabular-nums font-medium text-gray-800' : ci === 0 ? 'font-medium text-gray-900' : 'text-gray-600'}`}
-                              title={formatValue(row[col], isAmountColumn(col))}
-                            >
-                              {formatValue(row[col], isAmountColumn(col))}
-                            </td>
-                          ))}
+                          {columns.map((col, ci) => {
+                            const val = row[col]
+                            const formatted = formatValue(val, isAmountColumn(col))
+
+                            // Entry type badge
+                            if (col === 'entryType') {
+                              const et = String(val ?? '').toUpperCase()
+                              const isCredit = et === 'CREDIT'
+                              const isDebit  = et === 'DEBIT'
+                              return (
+                                <td key={col} className="px-5 py-3">
+                                  <span style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                                    padding: '3px 10px', borderRadius: 20,
+                                    fontSize: 11, fontWeight: 600,
+                                    background: isCredit ? '#ECFDF5' : isDebit ? '#FEF2F2' : '#F1F5F9',
+                                    color:      isCredit ? '#059669' : isDebit ? '#DC2626' : '#6b7280',
+                                  }}>
+                                    {isCredit && <span style={{ fontSize: 10 }}>↓</span>}
+                                    {isDebit  && <span style={{ fontSize: 10 }}>↑</span>}
+                                    {formatted}
+                                  </span>
+                                </td>
+                              )
+                            }
+
+                            // Type column — colour by value
+                            if (col === 'type') {
+                              const tv = String(val ?? '').toLowerCase()
+                              const color = tv.includes('deposit') ? '#1565C0' : tv.includes('withdraw') ? '#DC2626' : '#374151'
+                              return (
+                                <td key={col} className="px-5 py-4 text-sm font-medium" style={{ color }}>
+                                  {formatted}
+                                </td>
+                              )
+                            }
+
+                            // Reversed — dot pill
+                            if (col === 'reversed') {
+                              const isYes = String(val).toLowerCase() === 'yes'
+                              return (
+                                <td key={col} className="px-5 py-3">
+                                  <span style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                                    fontSize: 12, fontWeight: 500,
+                                    color: isYes ? '#6b7280' : '#059669',
+                                  }}>
+                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: isYes ? '#9ca3af' : '#059669', flexShrink: 0 }} />
+                                    {isYes ? 'Reversed' : 'Completed'}
+                                  </span>
+                                </td>
+                              )
+                            }
+
+                            return (
+                              <td
+                                key={col}
+                                className={`px-5 py-4 text-sm ${isAmountColumn(col) ? 'text-right tabular-nums font-semibold text-gray-800' : ci === 0 ? 'font-medium text-gray-900' : 'text-gray-600'}`}
+                                title={formatted}
+                              >
+                                {formatted}
+                              </td>
+                            )
+                          })}
                         </tr>
                       ))}
                     </tbody>
@@ -679,7 +732,7 @@ export default function ReportsPage() {
                           {columns.map((col, i) => {
                             const total = columnTotal(filteredRows, col)
                             return (
-                              <td key={col} className={`px-5 py-3 text-sm font-bold text-gray-900 ${isAmountColumn(col) ? 'text-right tabular-nums' : ''}`}>
+                              <td key={col} className={`px-5 py-4 text-sm font-bold text-gray-900 ${isAmountColumn(col) ? 'text-right tabular-nums' : ''}`}>
                                 {i === 0 ? 'Total' : total !== null ? formatValue(total, isAmountColumn(col)) : ''}
                               </td>
                             )
