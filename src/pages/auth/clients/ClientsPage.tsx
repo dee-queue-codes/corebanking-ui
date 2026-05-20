@@ -293,7 +293,7 @@ export default function ClientsPage() {
           <div
             style={{
               height: 3,
-              background: "linear-gradient(90deg, #C9A84C, #E8C96A, #C9A84C)",
+              background: "linear-gradient(90deg, #1565C0, #1976D2, #1565C0)",
             }}
           />
           <div
