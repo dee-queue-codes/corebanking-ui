@@ -2,7 +2,13 @@ import { http } from '../http'
 
 type ReportParams = Record<string, string | number | undefined>
 
+export interface Office {
+  id: number
+  name: string
+}
+
 export const reportsAPI = {
+  getOffices: () => http.get<{ success: boolean; data: Office[] }>('/fineract/offices'),
   getContributions: (params?: ReportParams) =>
     http.get('/reports/contributions', { params }),
   getContributionMembers: (params?: ReportParams) =>
