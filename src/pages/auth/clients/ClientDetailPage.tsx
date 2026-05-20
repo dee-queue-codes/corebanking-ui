@@ -529,8 +529,8 @@ const T = {
   navy: "#002663",
   navyDark: "#001844",
   navyLight: "#1a4080",
-  gold: "#C9A84C",
-  goldLight: "#F0DFA0",
+  gold: "#1565C0",
+  goldLight: "#DBEAFE",
   bg: "#EEF2F8",
   surface: "#FFFFFF",
   border: "#DDE4EF",
@@ -861,6 +861,7 @@ export default function ClientDetailPage() {
     dateOfBirth: "",
     isDependent: false,
   });
+  const [identityDeleteError, setIdentityDeleteError] = useState('')
   const [showIdentityDialog, setShowIdentityDialog] = useState(false);
   const [identityForm, setIdentityForm] = useState({
     documentTypeId: "",
@@ -1621,12 +1622,13 @@ export default function ClientDetailPage() {
 
   const handleDeleteIdentity = async (identityId: string | number) => {
     if (!clientId) return
+    setIdentityDeleteError('')
     try {
       await clientsAPI.deleteIdentity(clientId, identityId, skipAuthRedirect)
       const res = await clientsAPI.getIdentities(clientId, skipAuthRedirect)
       setIdentities(extractArray(res.data) as IdentityItem[])
     } catch (error) {
-      console.error('Failed to delete identity', error)
+      setIdentityDeleteError(getApiErrorMessage(error, 'Failed to delete identity.'))
     }
   }
 
@@ -2641,8 +2643,13 @@ export default function ClientDetailPage() {
     return (
       <SectionCard
         title="Identities"
-        actions={<GhostBtn onClick={() => { setAddError(''); setShowIdentityDialog(true) }}>Add</GhostBtn>}
+        actions={<GhostBtn onClick={() => { setAddError(''); setIdentityDeleteError(''); setShowIdentityDialog(true) }}>Add</GhostBtn>}
       >
+        {identityDeleteError && (
+          <p style={{ padding: '8px 22px', fontSize: 13, color: '#DC2626', fontFamily: 'DM Sans, sans-serif', borderBottom: `1px solid #FEE2E2`, background: '#FFF5F5' }}>
+            {identityDeleteError}
+          </p>
+        )}
         {identitiesLoading ? (
           <p style={{ padding: '32px 24px', textAlign: 'center', fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: T.textMuted }}>Loading identities...</p>
         ) : identities.length === 0 ? (
@@ -3018,7 +3025,7 @@ export default function ClientDetailPage() {
                           firstName: m.firstName ?? '',
                           middleName: m.middleName ?? '',
                           lastName: m.lastName ?? '',
-                          relationship: m.relationship ?? '',
+                          relationship: (m.relationship ?? '').toLowerCase(),
                           gender: (m.gender ?? '').toUpperCase(),
                           age: m.age != null ? String(m.age) : '',
                           qualification: m.qualification ?? '',
@@ -3912,7 +3919,14 @@ export default function ClientDetailPage() {
               <Input placeholder="Last name" value={editFamilyForm.lastName} onChange={(e) => setEditFamilyForm(p => ({ ...p, lastName: e.target.value }))} className="bg-gray-50 border-gray-300" />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <Input placeholder="Relationship" value={editFamilyForm.relationship} onChange={(e) => setEditFamilyForm(p => ({ ...p, relationship: e.target.value }))} className="bg-gray-50 border-gray-300" />
+              <select value={editFamilyForm.relationship} onChange={(e) => setEditFamilyForm(p => ({ ...p, relationship: e.target.value }))} style={{ height: 36, borderRadius: 6, border: '1px solid #D1D5DB', background: '#F9FAFB', padding: '0 10px', fontSize: 14, width: '100%' }}>
+                <option value="" disabled>Relationship</option>
+                <option value="spouse">Spouse</option>
+                <option value="father">Father</option>
+                <option value="mother">Mother</option>
+                <option value="sister">Sister</option>
+                <option value="brother">Brother</option>
+              </select>
               <select value={editFamilyForm.gender} onChange={(e) => setEditFamilyForm(p => ({ ...p, gender: e.target.value }))} style={{ height: 36, borderRadius: 6, border: '1px solid #D1D5DB', background: '#F9FAFB', padding: '0 10px', fontSize: 14, width: '100%' }}>
                 <option value="" disabled>Select gender</option>
                 <option value="MALE">Male</option>
@@ -4082,14 +4096,14 @@ export default function ClientDetailPage() {
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <Input
-                placeholder="Relationship"
-                value={familyForm.relationship}
-                onChange={(e) =>
-                  setFamilyForm((p) => ({ ...p, relationship: e.target.value }))
-                }
-                className="bg-gray-50 border-gray-300"
-              />
+              <select value={familyForm.relationship} onChange={(e) => setFamilyForm((p) => ({ ...p, relationship: e.target.value }))} style={{ height: 36, borderRadius: 6, border: '1px solid #D1D5DB', background: '#F9FAFB', padding: '0 10px', fontSize: 14, width: '100%' }}>
+                <option value="" disabled>Relationship</option>
+                <option value="spouse">Spouse</option>
+                <option value="father">Father</option>
+                <option value="mother">Mother</option>
+                <option value="sister">Sister</option>
+                <option value="brother">Brother</option>
+              </select>
               <select
                 value={familyForm.gender}
                 onChange={(e) => setFamilyForm((p) => ({ ...p, gender: e.target.value }))}
