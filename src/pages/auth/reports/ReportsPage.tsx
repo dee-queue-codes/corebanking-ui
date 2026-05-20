@@ -499,7 +499,7 @@ export default function ReportsPage() {
         </aside>
 
         {/* ── Right content ── */}
-        <main className="flex min-w-0 flex-1 flex-col gap-4 overflow-hidden p-6">
+        <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-hidden p-6">
 
           {/* Filter bar */}
           <div className="flex items-end justify-between gap-4 rounded-2xl border border-gray-100 bg-white px-5 py-4">
@@ -645,9 +645,9 @@ export default function ReportsPage() {
               </div>
             ) : (
               <>
-                <div className="flex-1 overflow-x-auto overflow-y-auto">
+                <div className="min-h-0 flex-1 overflow-x-auto overflow-y-auto">
                   <table className="w-full border-collapse">
-                    <thead>
+                    <thead className="sticky top-0 z-10">
                       <tr className="border-b border-gray-200 bg-gray-50">
                         {columns.map(col => (
                           <th key={col} className={`whitespace-nowrap px-5 py-4 text-[11px] font-semibold uppercase tracking-wider text-gray-500 ${isAmountColumn(col) ? 'text-right' : 'text-left'}`}>
@@ -728,12 +728,23 @@ export default function ReportsPage() {
                     </tbody>
                     {columns.some(col => columnTotal(filteredRows, col) !== null) && (
                       <tfoot>
-                        <tr className="border-t-2 border-gray-200 bg-gray-50">
+                        <tr style={{ borderTop: `2px solid ${accentColor}`, background: `${accentColor}08` }}>
                           {columns.map((col, i) => {
                             const total = columnTotal(filteredRows, col)
                             return (
-                              <td key={col} className={`px-5 py-4 text-sm font-bold text-gray-900 ${isAmountColumn(col) ? 'text-right tabular-nums' : ''}`}>
-                                {i === 0 ? 'Total' : total !== null ? formatValue(total, isAmountColumn(col)) : ''}
+                              <td
+                                key={col}
+                                className={`px-5 py-4 ${isAmountColumn(col) ? 'text-right tabular-nums' : ''}`}
+                              >
+                                {i === 0 ? (
+                                  <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: accentColor }}>
+                                    Total
+                                  </span>
+                                ) : total !== null ? (
+                                  <span style={{ fontSize: 14, fontWeight: 800, color: accentColor, fontFamily: "'Sora', sans-serif" }}>
+                                    {formatValue(total, isAmountColumn(col))}
+                                  </span>
+                                ) : ''}
                               </td>
                             )
                           })}
