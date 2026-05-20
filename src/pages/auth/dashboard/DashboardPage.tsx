@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
 import { Users, CreditCard, TrendingUp, Clock, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { QuickAction } from '@/components/dashboard/QuickAction'
+import { CashTransactionDrawer, type CashTxType } from '@/components/dashboard/CashTransactionDrawer'
 
 // ── Mock chart data ───────────────────────────────────────────────────────
 
@@ -80,6 +82,8 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 // ── Page ──────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
+  const [cashTxType, setCashTxType] = useState<CashTxType | null>(null)
+
   return (
     <div className="p-7 bg-[#f8f9fc] min-h-full" style={{ fontFamily: "'DM Sans', sans-serif" }}>
 
@@ -107,7 +111,11 @@ export default function DashboardPage() {
 
         {/* Row 1 left — Quick Actions (stretches to match Transaction Volume) */}
         <div className="col-span-1">
-          <QuickAction className="h-full" />
+          <QuickAction
+            className="h-full"
+            onCashDeposit={() => setCashTxType('deposit')}
+            onCashWithdraw={() => setCashTxType('withdraw')}
+          />
         </div>
 
         {/* Row 1 right — Transaction Volume */}
