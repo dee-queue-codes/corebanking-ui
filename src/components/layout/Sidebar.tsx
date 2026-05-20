@@ -183,7 +183,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {nav('dashboard',    <LayoutDashboard style={{ width: 15, height: 15 }} />, 'Dashboard')}
-            {nav('transactions', <Receipt style={{ width: 15, height: 15 }} />,         'Transactions', true)}
+            {nav('transactions', <Receipt style={{ width: 15, height: 15 }} />,         'Transactions')}
             {nav('tasks',        <CheckSquare style={{ width: 15, height: 15 }} />,     'Tasks',        true)}
           </div>
         </div>
