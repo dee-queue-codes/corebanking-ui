@@ -195,15 +195,28 @@ const categories: Category[] = [
           return accounts.flatMap(acc => {
             const txs = Array.isArray(acc.transactions) ? acc.transactions as Record<string, unknown>[] : []
             if (txs.length === 0) return []
-            return txs.map(tx => ({
-              date:           tx.date,
-              type:           tx.type,
-              entryType:      tx.entryType,
-              amount:         tx.amount,
-              runningBalance: tx.runningBalance,
-              narration:      tx.narration ?? tx.note ?? '-',
-              reversed:       tx.reversed ? 'Yes' : 'No',
-            }))
+            return txs.map(tx => {
+              const paymentType = tx.paymentType as Record<string, unknown> | null | undefined
+              const transfer    = tx.transfer    as Record<string, unknown> | null | undefined
+              const str = (v: unknown) => (typeof v === 'string' && v.trim() !== '' ? v.trim() : null)
+              const narration =
+                str(tx.narration) ??
+                str(tx.note) ??
+                str(tx.description) ??
+                str(paymentType?.name) ??
+                str(transfer?.transferDescription) ??
+                '—'
+              return {
+                accountNumber:  acc.accountNumber,
+                date:           tx.date,
+                type:           tx.type,
+                entryType:      tx.entryType,
+                amount:         tx.amount,
+                runningBalance: tx.runningBalance,
+                narration,
+                reversed:       tx.reversed ? 'Yes' : 'No',
+              }
+            })
           })
         },
       },

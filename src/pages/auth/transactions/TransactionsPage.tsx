@@ -22,7 +22,7 @@ interface TxRow {
   amount: number
   currency: string
   status: TxStatus
-  description: string
+  narration: string
   date: string
 }
 
@@ -73,15 +73,34 @@ function normaliseStatus(raw: unknown, reversed: unknown): TxStatus {
   return 'Completed'
 }
 
+function flattenBranchAccounts(r: Record<string, unknown>): unknown[] | null {
+  if (Array.isArray(r.accounts)) {
+    const rows = (r.accounts as Record<string, unknown>[]).flatMap(acc => {
+      if (!Array.isArray(acc.transactions)) return []
+      return (acc.transactions as Record<string, unknown>[]).map(tx => ({
+        ...tx,
+        accountNumber: acc.accountNumber, // inject parent account number
+      }))
+    })
+    if (rows.length > 0) return rows
+  }
+  return null
+}
+
 function extractArray(response: unknown): unknown[] {
   if (Array.isArray(response)) return response
   if (response && typeof response === 'object') {
     const r = response as Record<string, unknown>
+    // branch transactions: { accounts: [{ transactions: [] }] }
+    const branch = flattenBranchAccounts(r)
+    if (branch) return branch
     if (Array.isArray(r.transactions)) return r.transactions
     if (Array.isArray(r.content))      return r.content
     if (Array.isArray(r.data))         return r.data
     if (r.data && typeof r.data === 'object') {
       const d = r.data as Record<string, unknown>
+      const branchNested = flattenBranchAccounts(d)
+      if (branchNested) return branchNested
       if (Array.isArray(d.transactions)) return d.transactions
       if (Array.isArray(d.content))      return d.content
       if (Array.isArray(d.data))         return d.data
@@ -97,7 +116,13 @@ function mapTx(raw: unknown): TxRow {
   const clientName = text(tx.clientName) || nestedName(tx.client) || nestedName(tx.account) || '—'
   const paymentType = tx.paymentType as Record<string, unknown> | null | undefined
   const transfer    = tx.transfer    as Record<string, unknown> | null | undefined
-  const description = text(tx.narration) || text(tx.description) || text(paymentType?.name) || text(transfer?.transferDescription) || '—'
+  const str = (v: unknown) => (typeof v === 'string' && v.trim() !== '' ? v.trim() : null)
+  const narration =
+    str(tx.narration) ??
+    str(tx.description) ??
+    str(paymentType?.name) ??
+    str(transfer?.transferDescription) ??
+    '—'
   return {
     id:          text(tx.id) || String(Math.random()),
     reference:   text(tx.reference) || text(tx.transactionId) || text(tx.id) || '—',
@@ -107,7 +132,7 @@ function mapTx(raw: unknown): TxRow {
     amount:      Number(tx.amount ?? tx.transactionAmount ?? 0),
     currency:    text(tx.currency) || 'GHS',
     status:      normaliseStatus(tx.status, tx.reversed),
-    description,
+    narration,
     date:        formatDate(tx.date ?? tx.createdAt ?? tx.submittedOnDate),
   }
 }
@@ -153,6 +178,7 @@ export default function TransactionsPage() {
   const [officeId, setOfficeId]         = useState<number | null>(null)
   const [officeOpen, setOfficeOpen]     = useState(false)
   const officeRef                       = useRef<HTMLDivElement>(null)
+  const [txWindow, setTxWindow]         = useState('EOM')
 
   const [search, setSearch]             = useState('')
   const [typeFilter, setTypeFilter]     = useState<'All' | TxType>('All')
@@ -179,7 +205,8 @@ export default function TransactionsPage() {
     setLoading(true)
     setError('')
     try {
-      const params = officeId != null ? { officeId } : undefined
+      const params: Record<string, string | number> = { window: txWindow }
+      if (officeId != null) params.officeId = officeId
       const res  = await reportsAPI.getBranchTransactions(params)
       const body = (res as { data?: unknown }).data
       const rows = extractArray(body).map(mapTx)
@@ -189,12 +216,12 @@ export default function TransactionsPage() {
     } finally {
       setLoading(false)
     }
-  }, [officeId])
+  }, [officeId, txWindow])
 
   // Fetch whenever officeId is set or changes
   useEffect(() => {
     if (officeId != null) fetchTransactions()
-  }, [officeId, fetchTransactions])
+  }, [officeId, txWindow, fetchTransactions])
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -216,7 +243,7 @@ export default function TransactionsPage() {
       tx.reference.toLowerCase().includes(q)   ||
       tx.clientName.toLowerCase().includes(q)  ||
       tx.accountNo.toLowerCase().includes(q)   ||
-      tx.description.toLowerCase().includes(q)
+      tx.narration.toLowerCase().includes(q)
     const matchesType   = typeFilter   === 'All' || tx.type   === typeFilter
     const matchesStatus = statusFilter === 'All' || tx.status === statusFilter
     return matchesSearch && matchesType && matchesStatus
@@ -346,6 +373,17 @@ export default function TransactionsPage() {
             )}
           </div>
 
+          {/* Window filter */}
+          <select
+            value={txWindow}
+            onChange={e => setTxWindow(e.target.value)}
+            className="h-9 rounded-lg border border-gray-200 bg-white px-3 text-xs text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 hover:border-gray-300 transition-all"
+          >
+            <option value="EOD">End of Day</option>
+            <option value="EOW">End of Week</option>
+            <option value="EOM">End of Month</option>
+          </select>
+
           <span className="ml-auto text-xs text-gray-400">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</span>
         </div>
 
@@ -366,7 +404,7 @@ export default function TransactionsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-100">
-                    {['Reference', 'Client', 'Account No.', 'Type', 'Amount', 'Description', 'Status', 'Date', ''].map(h => (
+                    {['Account No.', 'Client', 'Type', 'Amount', 'Narration', 'Status', 'Date', ''].map(h => (
                       <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
@@ -374,7 +412,7 @@ export default function TransactionsPage() {
                 <tbody className="divide-y divide-gray-50">
                   {paged.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="px-5 py-12 text-center text-sm text-gray-400">
+                      <td colSpan={8} className="px-5 py-12 text-center text-sm text-gray-400">
                         {transactions.length === 0 ? 'No transactions found.' : 'No results match your filters.'}
                       </td>
                     </tr>
@@ -386,7 +424,7 @@ export default function TransactionsPage() {
                     return (
                       <tr key={tx.id} className="hover:bg-gray-50/60 transition-colors">
                         <td className="px-5 py-3.5">
-                          <span className="text-xs font-semibold text-[#002663]">{tx.reference}</span>
+                          <span className="text-xs font-semibold text-[#002663] font-mono">{tx.accountNo}</span>
                         </td>
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-2.5">
@@ -397,9 +435,6 @@ export default function TransactionsPage() {
                             </div>
                             <span className="text-xs font-medium text-gray-800 whitespace-nowrap">{tx.clientName}</span>
                           </div>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span className="text-xs text-gray-600 font-mono">{tx.accountNo}</span>
                         </td>
                         <td className="px-5 py-3.5">
                           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold ${tCfg.bg} ${tCfg.text}`}>
@@ -414,7 +449,7 @@ export default function TransactionsPage() {
                           </span>
                         </td>
                         <td className="px-5 py-3.5">
-                          <span className="text-xs text-gray-500 truncate max-w-[160px] block">{tx.description}</span>
+                          <span className="text-xs text-gray-500 truncate max-w-[160px] block">{tx.narration}</span>
                         </td>
                         <td className="px-5 py-3.5">
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold"
