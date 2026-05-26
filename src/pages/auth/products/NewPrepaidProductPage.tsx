@@ -95,7 +95,7 @@ export default function NewPrepaidProductPage() {
                 </div>
                 <div>
                   <Label className="text-xs text-gray-600 mb-1.5 block">Description</Label>
-                  <Textarea placeholder="Enter product description..." className="border-gray-200 text-sm min-h-[100px]" />
+                  <Textarea placeholder="Enter product description..." className="border-gray-200 text-sm min-h-25" />
                 </div>
               </div>
               <NavButtons prevLabel="Cancel" />
