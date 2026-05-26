@@ -1,11 +1,13 @@
 import { useState } from 'react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import {
   TrendingUp, AlertTriangle, DollarSign, BarChart2, Download,
   Plus, ChevronDown, LayoutGrid, List, ArrowLeft, FileText,
-  CheckCircle2, Clock, XCircle,
+  CheckCircle2, Clock,
 } from 'lucide-react'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Button } from '@/components/ui/button'
+import { ROUTES } from '@/router/routes'
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const T = {
@@ -734,19 +736,6 @@ function LoanDetailView({ loan, onBack }: { loan: ActiveLoan; onBack: () => void
   )
 }
 
-// ── Nav config ────────────────────────────────────────────────────────────────
-const NAV: Array<{ id: LoanView; label: string; badge?: number }> = [
-  { id: 'overview',       label: 'Overview' },
-  { id: 'applications',   label: 'Applications',    badge: 36 },
-  { id: 'active',         label: 'Active Loans',    badge: 1284 },
-  { id: 'disbursements',  label: 'Disbursements',   badge: 5 },
-  { id: 'repayments',     label: 'Repayments' },
-  { id: 'arrears',        label: 'Arrears & PAR',   badge: 92 },
-  { id: 'products',       label: 'Loan Products' },
-  { id: 'approvals',      label: 'Approvals',       badge: 9 },
-  { id: 'collateral',     label: 'Collateral & Guarantors' },
-]
-
 const VIEW_TITLES: Record<LoanView, string> = {
   overview: 'Overview', applications: 'Applications', active: 'Active Loans',
   disbursements: 'Disbursements', repayments: 'Repayments', arrears: 'Arrears & PAR',
@@ -755,10 +744,16 @@ const VIEW_TITLES: Record<LoanView, string> = {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function LoanManagementPage() {
-  const [activeView, setActiveView] = useState<LoanView>('overview')
+  const [searchParams] = useSearchParams()
+  const routerNavigate = useNavigate()
   const [selectedLoan, setSelectedLoan] = useState<ActiveLoan | null>(null)
 
-  const navigate = (v: LoanView) => { setActiveView(v); setSelectedLoan(null) }
+  const activeView = (searchParams.get('view') ?? 'overview') as LoanView
+
+  const navigateToView = (v: LoanView) => {
+    setSelectedLoan(null)
+    routerNavigate(`${ROUTES.LOANS}?view=${v}`)
+  }
 
   const isDetail = activeView === 'active' && selectedLoan !== null
 
@@ -768,11 +763,9 @@ export default function LoanManagementPage() {
       <div style={{ marginBottom: 20 }}>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.14em', color: T.muted, textTransform: 'uppercase', marginBottom: 4 }}>LOAN MANAGEMENT</div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-          <div>
-            <h1 style={{ fontSize: 26, fontWeight: 800, color: T.ink, margin: 0, fontFamily: "'Sora', sans-serif", letterSpacing: '-0.02em' }}>
-              {isDetail ? selectedLoan!.clientName : VIEW_TITLES[activeView]}
-            </h1>
-          </div>
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: T.ink, margin: 0, fontFamily: "'Sora', sans-serif", letterSpacing: '-0.02em' }}>
+            {isDetail ? selectedLoan!.clientName : VIEW_TITLES[activeView]}
+          </h1>
           {activeView === 'overview' && (
             <div style={{ display: 'flex', gap: 9 }}>
               <Button variant="outline" style={{ fontSize: 13 }}><Download style={{ width: 14, height: 14 }} />Export</Button>
@@ -800,39 +793,10 @@ export default function LoanManagementPage() {
         </div>
       </div>
 
-      {/* Sub-nav */}
-      {!isDetail && (
-        <div style={{ display: 'flex', gap: 2, overflowX: 'auto', marginBottom: 20, paddingBottom: 2 }}>
-          {NAV.map(n => {
-            const active = activeView === n.id
-            return (
-              <button key={n.id} onClick={() => navigate(n.id)} style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '8px 14px', borderRadius: 8, border: 'none',
-                fontFamily: "'DM Sans',sans-serif", fontSize: 13, fontWeight: 700,
-                cursor: 'pointer', whiteSpace: 'nowrap',
-                background: active ? T.navy : 'transparent',
-                color: active ? '#fff' : T.muted,
-                transition: 'background 0.15s, color 0.15s',
-              }}
-              onMouseEnter={e => { if (!active) { e.currentTarget.style.background = '#E8ECF4'; e.currentTarget.style.color = T.ink } }}
-              onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = T.muted } }}>
-                {n.label}
-                {n.badge !== undefined && (
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 20, background: active ? 'rgba(255,255,255,0.2)' : '#DDE4EF', color: active ? '#fff' : T.muted }}>
-                    {n.badge >= 1000 ? `${(n.badge / 1000).toFixed(1)}k` : n.badge}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-      )}
-
       {/* View content */}
       {isDetail
         ? <LoanDetailView loan={selectedLoan!} onBack={() => setSelectedLoan(null)} />
-        : activeView === 'overview'      ? <OverviewView onNavigate={navigate} />
+        : activeView === 'overview'      ? <OverviewView onNavigate={navigateToView} />
         : activeView === 'applications'  ? <ApplicationsView />
         : activeView === 'active'        ? <ActiveLoansView onSelectLoan={setSelectedLoan} />
         : activeView === 'disbursements' ? <DisbursementsView />
