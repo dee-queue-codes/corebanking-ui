@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { T, mockLoanProducts } from './loanShared'
+import { LoanSubNav } from './LoanSubNav'
 
 export default function LoanProductsPage() {
   return (
@@ -15,6 +16,8 @@ export default function LoanProductsPage() {
           <Button style={{ background: T.navy, fontSize: 13 }}><Plus style={{ width: 14, height: 14 }} />New Product</Button>
         </div>
       </div>
+
+      <LoanSubNav />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
         {mockLoanProducts.map(p => (

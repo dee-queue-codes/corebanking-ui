@@ -3,6 +3,7 @@ import { TrendingUp, AlertTriangle, DollarSign, BarChart2, Clock, Download, Plus
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { T, mockApplications, Panel, PanelHead, Ava, thStyle, tdStyle } from './loanShared'
+import { LoanSubNav } from './LoanSubNav'
 
 export default function LoanOverviewPage() {
   const navigate = useNavigate()
@@ -44,6 +45,8 @@ export default function LoanOverviewPage() {
           </div>
         </div>
       </div>
+
+      <LoanSubNav />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* KPI Cards */}

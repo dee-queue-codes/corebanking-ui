@@ -1,4 +1,5 @@
 import { T, mockRepaymentHistory, Panel, PanelHead, Ava, tdStyle } from './loanShared'
+import { LoanSubNav } from './LoanSubNav'
 
 export default function LoanRepaymentsPage() {
   return (
@@ -12,6 +13,8 @@ export default function LoanRepaymentsPage() {
           </h1>
         </div>
       </div>
+
+      <LoanSubNav />
 
       <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 18 }}>
         <Panel>

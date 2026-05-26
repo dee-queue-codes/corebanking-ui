@@ -1,6 +1,7 @@
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { T, mockOverdueLoans, Panel, PanelHead, Chip, Ava, thStyle, tdStyle } from './loanShared'
+import { LoanSubNav } from './LoanSubNav'
 
 export default function LoanArrearsPage() {
   const aging = [
@@ -22,6 +23,8 @@ export default function LoanArrearsPage() {
           <Button variant="outline" style={{ fontSize: 13 }}>Run PAR report</Button>
         </div>
       </div>
+
+      <LoanSubNav />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>

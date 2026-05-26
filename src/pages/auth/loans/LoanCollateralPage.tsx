@@ -1,6 +1,7 @@
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { T, mockCollateral, mockGuarantors, Panel, PanelHead, Ava, thStyle, tdStyle } from './loanShared'
+import { LoanSubNav } from './LoanSubNav'
 
 export default function LoanCollateralPage() {
   return (
@@ -18,6 +19,8 @@ export default function LoanCollateralPage() {
           </div>
         </div>
       </div>
+
+      <LoanSubNav />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
         <Panel>

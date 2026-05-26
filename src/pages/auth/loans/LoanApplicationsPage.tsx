@@ -3,6 +3,7 @@ import { ChevronDown, LayoutGrid, List, Plus } from 'lucide-react'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { T, mockApplications, Panel, Ava, thStyle, tdStyle } from './loanShared'
+import { LoanSubNav } from './LoanSubNav'
 
 export default function LoanApplicationsPage() {
   const [view, setView] = useState<'board' | 'table'>('board')
@@ -24,6 +25,8 @@ export default function LoanApplicationsPage() {
           <Button style={{ background: T.navy, fontSize: 13 }}><Plus style={{ width: 14, height: 14 }} />New Application</Button>
         </div>
       </div>
+
+      <LoanSubNav />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { T, mockApprovals, Panel } from './loanShared'
+import { LoanSubNav } from './LoanSubNav'
 
 export default function LoanApprovalsPage() {
   const [tab, setTab] = useState(0)
@@ -16,6 +17,8 @@ export default function LoanApprovalsPage() {
           </h1>
         </div>
       </div>
+
+      <LoanSubNav />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ display: 'flex', gap: 4, background: '#EEF1F6', padding: 4, borderRadius: 10, width: 'fit-content' }}>

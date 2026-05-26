@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { CheckCircle2, Clock } from 'lucide-react'
 import { T, mockDisbursements, Panel, Ava } from './loanShared'
+import { LoanSubNav } from './LoanSubNav'
 
 export default function LoanDisbursementsPage() {
   const [tab, setTab] = useState(0)
@@ -17,6 +18,8 @@ export default function LoanDisbursementsPage() {
           </h1>
         </div>
       </div>
+
+      <LoanSubNav />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ display: 'flex', gap: 4, background: '#EEF1F6', padding: 4, borderRadius: 10, width: 'fit-content' }}>

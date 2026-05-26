@@ -6,6 +6,7 @@ import {
   T, ActiveLoan, mockActiveLoans, mockSchedule,
   Panel, PanelHead, Ava, MiniBar, thStyle, tdStyle,
 } from './loanShared'
+import { LoanSubNav } from './LoanSubNav'
 
 function LoanDetailView({ loan, onBack }: { loan: ActiveLoan; onBack: () => void }) {
   const [tab, setTab] = useState(0)
@@ -110,6 +111,8 @@ export default function LoanActiveLoansPage() {
           )}
         </div>
       </div>
+
+      <LoanSubNav />
 
       {isDetail ? (
         <LoanDetailView loan={selectedLoan!} onBack={() => setSelectedLoan(null)} />
