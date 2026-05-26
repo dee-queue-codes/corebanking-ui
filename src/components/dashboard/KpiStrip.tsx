@@ -55,7 +55,7 @@ interface StatCardProps {
 
 function StatCard({ label, value, sub, up, icon, iconBg, loading }: StatCardProps) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center gap-4">
+    <div className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-5 flex items-center gap-3 sm:gap-4">
       <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
         {icon}
       </div>
@@ -106,7 +106,7 @@ export function KpiStrip() {
   }, [])
 
   return (
-    <div className="grid grid-cols-5 gap-4 mb-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
       <StatCard loading={loading} label="Total Clients"                  value={data.totalClients.toLocaleString()}        sub="+12.4%" up={true}  iconBg="bg-blue-50"    icon={<Users        className="w-5 h-5 text-blue-600"    />} />
       <StatCard loading={loading} label="Active Accounts"                value={data.activeAccounts.toLocaleString()}      sub="+8.1%"  up={true}  iconBg="bg-violet-50"  icon={<CreditCard   className="w-5 h-5 text-violet-600"  />} />
       <StatCard loading={loading} label={`Deposits (${CURRENT_MONTH})`}  value={fmtAmount(data.depositsThisMonth)}         sub="+25.8%" up={true}  iconBg="bg-emerald-50" icon={<TrendingUp   className="w-5 h-5 text-emerald-600" />} />

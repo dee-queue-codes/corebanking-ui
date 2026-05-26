@@ -20,10 +20,10 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-7 bg-[#f8f9fc] min-h-full" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="p-4 sm:p-5 lg:p-7 bg-[#f8f9fc] min-h-full" style={{ fontFamily: "'DM Sans', sans-serif" }}>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-xl font-extrabold text-gray-900 tracking-tight">Dashboard</h1>
           <p className="text-xs text-gray-400 mt-0.5 font-medium">Welcome back — here's what's happening today.</p>
@@ -37,17 +37,17 @@ export default function DashboardPage() {
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </button>
-          <span className="px-4 py-1.5 bg-blue-50 text-blue-500 border border-blue-100 rounded-lg text-xs font-semibold opacity-50 cursor-not-allowed pointer-events-none select-none">
+          <span className="hidden sm:inline px-4 py-1.5 bg-blue-50 text-blue-500 border border-blue-100 rounded-lg text-xs font-semibold opacity-50 cursor-not-allowed pointer-events-none select-none">
             Teller Account
           </span>
         </div>
       </div>
 
-      {/* KPI strip — fetches active account count, client count, deposits */}
+      {/* KPI strip */}
       <KpiStrip key={refreshKey} />
 
       {/* Main grid */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
         {/* Quick Actions */}
         <div className="col-span-1">
@@ -58,7 +58,7 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Transaction Volume — fetches deposits + credits monthly */}
+        {/* Transaction Volume */}
         <TxVolumeChart key={refreshKey} />
 
         {/* Client Growth */}

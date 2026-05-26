@@ -129,7 +129,7 @@ export function RecentActivity() {
   const visible    = txs.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE)
 
   return (
-    <div className="col-span-2 bg-white rounded-2xl border border-gray-100 p-6">
+    <div className="col-span-1 sm:col-span-2 bg-white rounded-2xl border border-gray-100 p-6">
 
       {/* Header */}
       <div className="flex items-center justify-between mb-2">

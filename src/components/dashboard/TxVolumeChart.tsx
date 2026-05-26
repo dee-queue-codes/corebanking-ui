@@ -81,7 +81,7 @@ export function TxVolumeChart() {
   }, [])
 
   return (
-    <div className="col-span-2 bg-white rounded-2xl border border-gray-100 p-6">
+    <div className="col-span-1 sm:col-span-2 bg-white rounded-2xl border border-gray-100 p-6">
       <div className="flex items-center justify-between mb-5">
         <div>
           <h3 className="text-sm font-bold text-gray-900">Transaction Volume</h3>
