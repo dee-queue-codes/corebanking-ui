@@ -7,9 +7,8 @@ import {
   Eye,
   Edit,
   Trash2,
-  CheckCircle2,
-  AlertTriangle,
 } from "lucide-react";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ROUTES } from "@/router/routes";
 import { clientsAPI } from "@/services/clients/clientsAPI";
@@ -772,43 +771,7 @@ export default function ClientsPage() {
 
                       {/* Status */}
                       <td style={{ padding: "14px 20px" }}>
-                        {client.status === "Active" ? (
-                          <span
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: 5,
-                              padding: "3px 10px 3px 7px",
-                              borderRadius: 20,
-                              fontSize: 12,
-                              fontWeight: 500,
-                              color: "#059669",
-                              background: "#ECFDF5",
-                              border: "1px solid #A7F3D0",
-                            }}
-                          >
-                            <CheckCircle2 style={{ width: 12, height: 12 }} />
-                            Active
-                          </span>
-                        ) : (
-                          <span
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: 5,
-                              padding: "3px 10px 3px 7px",
-                              borderRadius: 20,
-                              fontSize: 12,
-                              fontWeight: 500,
-                              color: "#B45309",
-                              background: "#FFFBEB",
-                              border: "1px solid #FCD34D",
-                            }}
-                          >
-                            <AlertTriangle style={{ width: 12, height: 12 }} />
-                            Pending
-                          </span>
-                        )}
+                        <StatusBadge status={client.status} />
                       </td>
 
                       {/* Office */}

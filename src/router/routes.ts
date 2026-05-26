@@ -38,5 +38,6 @@ export const ROUTES = {
     FINANCIAL: '/reports/financial',
     PERFORMANCE: '/reports/performance',
   },
+  LOANS: '/loans',
   SETTINGS: '/settings',
 }

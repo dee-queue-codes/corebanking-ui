@@ -7,6 +7,7 @@ import { clientsAPI } from '@/services/clients/clientsAPI'
 import { productsAPI, type SavingsProduct } from '@/services/products/productsAPI'
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -155,33 +156,6 @@ function isPendingApprovalStatus(status: string): boolean {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function StatusPill({ status }: { status: string }) {
-  const s = status?.toLowerCase() ?? ''
-  const { bg, color, dot } = ((): { bg: string; color: string; dot: string } => {
-    if (s === 'active' || s === 'approved')
-      return { bg: T.successBg, color: T.success, dot: T.success }
-    if (s === 'completed')
-      return { bg: '#ECFDF5',  color: '#059669', dot: '#059669' }
-    if (s === 'pending' || s === 'submitted')
-      return { bg: '#FFFBEB',  color: '#B45309', dot: '#F59E0B' }
-    if (s === 'failed')
-      return { bg: '#FEF2F2',  color: '#DC2626', dot: '#EF4444' }
-    if (s === 'reversed')
-      return { bg: '#F1F5F9',  color: T.textSub, dot: T.textMuted }
-    return   { bg: '#F1F5F9',  color: T.textSub, dot: T.textMuted }
-  })()
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 5,
-      padding: '3px 10px', borderRadius: 20,
-      fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: 600,
-      background: bg, color,
-    }}>
-      <span style={{ width: 5, height: 5, borderRadius: '50%', background: dot, flexShrink: 0 }} />
-      {status || '—'}
-    </span>
-  )
-}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -965,7 +939,7 @@ export default function AccountLookupPage() {
                         {tx.runningBalance.toFixed(2)}
                       </td>
                       <td style={{ padding: '13px 20px' }}>
-                        <StatusPill status={tx.status} />
+                        <StatusBadge status={tx.status} />
                       </td>
                     </tr>
                   ))}

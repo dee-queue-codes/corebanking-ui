@@ -10,6 +10,7 @@ import {
   Copy,
   Check,
 } from "lucide-react";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -745,30 +746,6 @@ function LoadingRow({ cols }: { cols: number }) {
   );
 }
 
-function StatusPill({ status }: { status: string }) {
-  const s = status?.toLowerCase() ?? ''
-  const { bg, color, dot } = ((): { bg: string; color: string; dot: string } => {
-    if (s === 'completed')
-      return { bg: T.successBg,  color: T.success,   dot: T.success   }
-    if (s === 'active')
-      return { bg: T.successBg,  color: T.success,   dot: T.success   }
-    if (s === 'pending' || s === 'submitted')
-      return { bg: '#FFFBEB',    color: '#B45309',   dot: '#F59E0B'   }
-    if (s === 'approved')
-      return { bg: T.successBg,  color: T.success,   dot: T.success   }
-    if (s === 'failed')
-      return { bg: '#FEF2F2',    color: '#DC2626',   dot: '#EF4444'   }
-    if (s === 'reversed')
-      return { bg: '#F1F5F9',    color: T.textSub,   dot: T.textMuted }
-    return   { bg: '#F1F5F9',    color: T.textSub,   dot: T.textMuted }
-  })()
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 20, fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: 600, background: bg, color, whiteSpace: 'nowrap', flexWrap: 'wrap', maxWidth: '100%' }}>
-      <span style={{ width: 5, height: 5, borderRadius: '50%', background: dot, flexShrink: 0 }} />
-      {status || '—'}
-    </span>
-  )
-}
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -2060,7 +2037,7 @@ export default function ClientDetailPage() {
                       {acc.currency} {Number(acc.balance || 0).toFixed(2)}
                     </td>
                     <td style={{ padding: "13px 20px", minWidth: 110 }}>
-                      <StatusPill status={acc.status} />
+                      <StatusBadge status={acc.status} />
                     </td>
                     <td
                       style={{
@@ -2618,7 +2595,7 @@ export default function ClientDetailPage() {
                         {tx.runningBalance.toFixed(2)}
                       </td>
                       <td style={{ padding: "13px 20px" }}>
-                        <StatusPill status={tx.status} />
+                        <StatusBadge status={tx.status} />
                       </td>
                     </tr>
                   ))}

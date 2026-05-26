@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { StatusBadge } from '@/components/ui/StatusBadge'
 import {
   BarChart3,
   Building2,
@@ -722,19 +723,12 @@ export default function ReportsPage() {
                               )
                             }
 
-                            // Reversed — dot pill
+                            // Reversed — status badge
                             if (col === 'reversed') {
                               const isYes = String(val).toLowerCase() === 'yes'
                               return (
                                 <td key={col} className="px-5 py-3">
-                                  <span style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: 5,
-                                    fontSize: 12, fontWeight: 500,
-                                    color: isYes ? '#6b7280' : '#059669',
-                                  }}>
-                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: isYes ? '#9ca3af' : '#059669', flexShrink: 0 }} />
-                                    {isYes ? 'Reversed' : 'Completed'}
-                                  </span>
+                                  <StatusBadge status={isYes ? 'Reversed' : 'Completed'} />
                                 </td>
                               )
                             }

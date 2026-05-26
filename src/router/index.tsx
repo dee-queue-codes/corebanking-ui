@@ -30,6 +30,7 @@ import TransactionReportPage from '@/pages/auth/reports/TransactionReportPage'
 import ClientReportPage from '@/pages/auth/reports/ClientReportPage'
 import FinancialSummaryPage from '@/pages/auth/reports/FinancialSummaryPage'
 import PerformanceReportPage from '@/pages/auth/reports/PerformanceReportPage'
+import LoanManagementPage from '@/pages/auth/loans/LoanManagementPage'
 import SettingsPage from '@/pages/auth/settings/SettingsPage'
 
 export const router = createBrowserRouter([
@@ -69,6 +70,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.REPORTS.CLIENTS,          element: <ClientReportPage /> },
           { path: ROUTES.REPORTS.FINANCIAL,        element: <FinancialSummaryPage /> },
           { path: ROUTES.REPORTS.PERFORMANCE,      element: <PerformanceReportPage /> },
+          { path: ROUTES.LOANS,                    element: <LoanManagementPage /> },
           { path: ROUTES.SETTINGS,                 element: <SettingsPage /> },
         ],
       },

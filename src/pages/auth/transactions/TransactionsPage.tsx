@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import {
   ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight,
-  Download, Search, ChevronDown, MoreVertical,
-  CheckCircle2, Clock, XCircle, RefreshCw,
+  Download, Search, ChevronDown, MoreVertical, RefreshCw,
 } from 'lucide-react'
+import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { reportsAPI } from '@/services/reports/reportsAPI'
 import type { Office } from '@/services/reports/reportsAPI'
@@ -156,12 +156,6 @@ const typeConfig: Record<TxType, { icon: React.ElementType; bg: string; text: st
   Transfer: { icon: ArrowLeftRight,  bg: 'bg-blue-50',    text: 'text-blue-700'    },
 }
 
-const statusConfig: Record<TxStatus, { icon: React.ElementType; bg: string; color: string }> = {
-  Completed: { icon: CheckCircle2, bg: '#ECFDF5', color: '#059669' },
-  Pending:   { icon: Clock,        bg: '#FFFBEB', color: '#B45309' },
-  Failed:    { icon: XCircle,      bg: '#FEF2F2', color: '#DC2626' },
-  Reversed:  { icon: RefreshCw,    bg: '#F1F5F9', color: '#64748B' },
-}
 
 const ALL_TYPES:    Array<'All' | TxType>   = ['All', 'Credit', 'Debit', 'Transfer']
 const ALL_STATUSES: Array<'All' | TxStatus> = ['All', 'Completed', 'Pending', 'Failed', 'Reversed']
@@ -418,9 +412,7 @@ export default function TransactionsPage() {
                     </tr>
                   ) : paged.map(tx => {
                     const tCfg = typeConfig[tx.type]
-                    const sCfg = statusConfig[tx.status]
                     const TIcon = tCfg.icon
-                    const SIcon = sCfg.icon
                     return (
                       <tr key={tx.id} className="hover:bg-gray-50/60 transition-colors">
                         <td className="px-5 py-3.5">
@@ -452,11 +444,7 @@ export default function TransactionsPage() {
                           <span className="text-xs text-gray-500 truncate max-w-[160px] block">{tx.narration}</span>
                         </td>
                         <td className="px-5 py-3.5">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold"
-                            style={{ background: sCfg.bg, color: sCfg.color }}>
-                            <SIcon className="w-3 h-3" />
-                            {tx.status}
-                          </span>
+                          <StatusBadge status={tx.status} />
                         </td>
                         <td className="px-5 py-3.5">
                           <span className="text-xs text-gray-400 whitespace-nowrap">{tx.date}</span>

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Plus, DollarSign, Search, MoreVertical, Eye, Edit, Trash2 } from 'lucide-react'
+import { StatusBadge } from '@/components/ui/StatusBadge'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -349,7 +350,7 @@ export default function LoanProductsListPage() {
                       <span className="text-gray-500">Principal: <span className="text-gray-900">{product.currency} {product.principal ?? product.minPrincipal ?? 0}</span></span>
                       <span className="text-gray-500">Repayments: <span className="text-gray-900">{product.numberOfRepayments ?? '-'}</span></span>
                       <span className="text-gray-500">Interest: <span className="text-gray-900">{product.annualInterestRate ?? product.interestRate ?? 0}%</span></span>
-                      <span className="px-2 py-0.5 rounded-full bg-green-50 text-green-700">{product.status?.includes('active') ? 'Active' : product.status || 'Active'}</span>
+                      <StatusBadge status={product.status?.includes('active') ? 'Active' : product.status || 'Active'} />
                     </div>
                   </div>
                 </div>

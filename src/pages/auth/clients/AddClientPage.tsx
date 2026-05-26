@@ -131,7 +131,7 @@ export default function AddClientPage() {
         lastName:        personal.lastName.trim(),
         middleName:      personal.middleName.trim() || undefined,
         dateOfBirth:     personal.dateOfBirth || undefined,
-        gender:          personal.gender     || undefined,
+        gender:          personal.gender ? personal.gender.toUpperCase() : undefined,
         emailAddress:    personal.email.trim() || undefined,
         mobileNo:        personal.mobileNumber.trim(),
         alternatePhone:  personal.alternatePhone.trim() || undefined,

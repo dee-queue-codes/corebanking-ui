@@ -1,4 +1,4 @@
-import { LayoutDashboard, Receipt, CheckSquare, Users, UserCog, FileText, Calculator, Settings, Package, ChevronLeft, ChevronRight, CreditCard } from 'lucide-react'
+import { LayoutDashboard, Receipt, CheckSquare, Users, UserCog, FileText, Calculator, Settings, Package, ChevronLeft, ChevronRight, CreditCard, Landmark } from 'lucide-react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { ROUTES } from '@/router/routes'
 
@@ -13,6 +13,7 @@ const routeMap: Record<string, string> = {
   tasks:            ROUTES.TASKS,
   clients:          ROUTES.CLIENTS.LIST,
   'account':        ROUTES.CLIENTS.ACCOUNT_LOOKUP,
+  'loans':          ROUTES.LOANS,
   products:         ROUTES.PRODUCTS.LIST,
   administrations:  ROUTES.ADMINISTRATION.ROOT,
   reports:          ROUTES.REPORTS.ROOT,
@@ -30,6 +31,7 @@ function getActiveId(pathname: string): string {
   if (pathname.startsWith('/accounting'))     return 'accounting'
   if (pathname.startsWith('/transactions'))   return 'transactions'
   if (pathname.startsWith('/tasks'))          return 'tasks'
+  if (pathname.startsWith('/loans'))           return 'loans'
   if (pathname.startsWith('/settings'))       return 'settings'
   return 'dashboard'
 }
@@ -203,6 +205,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             {nav('clients',         <Users style={{ width: 15, height: 15 }} />,      'Clients')}
             {nav('account',         <CreditCard style={{ width: 15, height: 15 }} />, 'Account')}
             {nav('products',        <Package style={{ width: 15, height: 15 }} />,    'Products')}
+            {nav('loans',           <Landmark style={{ width: 15, height: 15 }} />,   'Loan Management')}
             {nav('administrations', <UserCog style={{ width: 15, height: 15 }} />,    'Administrations', true)}
             {nav('reports',         <FileText style={{ width: 15, height: 15 }} />,   'Reports')}
             {nav('accounting',      <Calculator style={{ width: 15, height: 15 }} />, 'Accounting', true)}
