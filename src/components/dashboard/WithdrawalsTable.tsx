@@ -142,7 +142,7 @@ export function WithdrawalsTable() {
                   </span>
                 </td>
                 <td className={`${tdCls} font-semibold text-gray-900`}>{row.displayName}</td>
-                <td className={`${tdCls} text-gray-400 max-w-[200px] truncate`}>{row.narration}</td>
+                <td className={`${tdCls} text-gray-400 max-w-50 truncate`}>{row.narration}</td>
                 <td className={`${tdCls} text-right font-bold text-red-500`}>
                   <span className="flex items-center justify-end gap-1">
                     <ArrowUpRight className="w-3 h-3 shrink-0" />
