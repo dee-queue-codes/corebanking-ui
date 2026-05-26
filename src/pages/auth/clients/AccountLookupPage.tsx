@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight, RefreshCw, Wallet, TrendingUp, TrendingDown, Activity, Plus, User, ChevronDown } from 'lucide-react'
+import { Search, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight, RefreshCw, Wallet, TrendingUp, TrendingDown, Activity, User, ChevronDown } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import { accountsAPI } from '@/services/clients/accountsAPI'
 import { clientTransactionsAPI } from '@/services/clients/transactionsAPI'
@@ -297,7 +297,7 @@ export default function AccountLookupPage() {
       if (/^\d+$/.test(val)) {
         try {
           const res = await clientsAPI.getById(val, skipAuth)
-          const raw = (res.data as Record<string, unknown>)
+          const raw = (res.data as unknown as Record<string, unknown>)
           const d = (raw.data ?? raw) as Record<string, unknown>
           const id = text(d.id) || text(d.clientId) || val
           const getName = () => {

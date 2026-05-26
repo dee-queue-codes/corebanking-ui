@@ -101,7 +101,7 @@ export default function LoanApplicationsPage() {
       if (/^\d+$/.test(val)) {
         try {
           const res = await clientsAPI.getById(val, { _skipAuthRedirect: true })
-          const d = ((res.data as Record<string,unknown>).data ?? res.data) as Record<string,unknown>
+          const d = ((res.data as unknown as Record<string,unknown>).data ?? res.data) as Record<string,unknown>
           const id = text(d.id) || val
           const name = text(d.displayName) || text(d.name) ||
             [text(d.firstName), text(d.middleName), text(d.lastName)].filter(Boolean).join(' ') || id

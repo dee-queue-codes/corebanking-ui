@@ -59,7 +59,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     setUsersLoading(true)
-    usersAPI.getAll({}, skip as never)
+    usersAPI.getAll(skip as never)
       .then(res => {
         const data = res.data
         const arr = Array.isArray(data) ? data : ((data as { content?: SystemUser[] }).content ?? [])

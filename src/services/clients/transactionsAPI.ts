@@ -1,5 +1,3 @@
-import type { Transaction } from '@/types'
-import type { PaginatedResponse } from '@/types'
 import type { AxiosRequestConfig } from 'axios'
 import { http } from '../http'
 
