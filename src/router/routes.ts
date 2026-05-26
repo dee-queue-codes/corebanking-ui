@@ -38,6 +38,17 @@ export const ROUTES = {
     FINANCIAL: '/reports/financial',
     PERFORMANCE: '/reports/performance',
   },
-  LOANS: '/loans',
+  LOANS: {
+    ROOT: '/loans',
+    OVERVIEW: '/loans/overview',
+    APPLICATIONS: '/loans/applications',
+    ACTIVE: '/loans/active',
+    DISBURSEMENTS: '/loans/disbursements',
+    REPAYMENTS: '/loans/repayments',
+    ARREARS: '/loans/arrears',
+    PRODUCTS: '/loans/products',
+    APPROVALS: '/loans/approvals',
+    COLLATERAL: '/loans/collateral',
+  },
   SETTINGS: '/settings',
 }

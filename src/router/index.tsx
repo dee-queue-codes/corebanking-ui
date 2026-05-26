@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { ProtectedRoute } from './ProtectedRoute'
 import { ROUTES } from './routes'
@@ -30,7 +30,15 @@ import TransactionReportPage from '@/pages/auth/reports/TransactionReportPage'
 import ClientReportPage from '@/pages/auth/reports/ClientReportPage'
 import FinancialSummaryPage from '@/pages/auth/reports/FinancialSummaryPage'
 import PerformanceReportPage from '@/pages/auth/reports/PerformanceReportPage'
-import LoanManagementPage from '@/pages/auth/loans/LoanManagementPage'
+import LoanOverviewPage from '@/pages/auth/loans/LoanOverviewPage'
+import LoanApplicationsPage from '@/pages/auth/loans/LoanApplicationsPage'
+import LoanActiveLoansPage from '@/pages/auth/loans/LoanActiveLoansPage'
+import LoanDisbursementsPage from '@/pages/auth/loans/LoanDisbursementsPage'
+import LoanRepaymentsPage from '@/pages/auth/loans/LoanRepaymentsPage'
+import LoanArrearsPage from '@/pages/auth/loans/LoanArrearsPage'
+import LoanProductsPage from '@/pages/auth/loans/LoanProductsPage'
+import LoanApprovalsPage from '@/pages/auth/loans/LoanApprovalsPage'
+import LoanCollateralPage from '@/pages/auth/loans/LoanCollateralPage'
 import SettingsPage from '@/pages/auth/settings/SettingsPage'
 
 export const router = createBrowserRouter([
@@ -70,7 +78,16 @@ export const router = createBrowserRouter([
           { path: ROUTES.REPORTS.CLIENTS,          element: <ClientReportPage /> },
           { path: ROUTES.REPORTS.FINANCIAL,        element: <FinancialSummaryPage /> },
           { path: ROUTES.REPORTS.PERFORMANCE,      element: <PerformanceReportPage /> },
-          { path: ROUTES.LOANS,                    element: <LoanManagementPage /> },
+          { path: ROUTES.LOANS.ROOT,          element: <Navigate to={ROUTES.LOANS.OVERVIEW} replace /> },
+          { path: ROUTES.LOANS.OVERVIEW,      element: <LoanOverviewPage /> },
+          { path: ROUTES.LOANS.APPLICATIONS,  element: <LoanApplicationsPage /> },
+          { path: ROUTES.LOANS.ACTIVE,        element: <LoanActiveLoansPage /> },
+          { path: ROUTES.LOANS.DISBURSEMENTS, element: <LoanDisbursementsPage /> },
+          { path: ROUTES.LOANS.REPAYMENTS,    element: <LoanRepaymentsPage /> },
+          { path: ROUTES.LOANS.ARREARS,       element: <LoanArrearsPage /> },
+          { path: ROUTES.LOANS.PRODUCTS,      element: <LoanProductsPage /> },
+          { path: ROUTES.LOANS.APPROVALS,     element: <LoanApprovalsPage /> },
+          { path: ROUTES.LOANS.COLLATERAL,    element: <LoanCollateralPage /> },
           { path: ROUTES.SETTINGS,                 element: <SettingsPage /> },
         ],
       },
