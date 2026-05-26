@@ -146,27 +146,40 @@ export default function LoanProductsListPage() {
   }
 
   const buildPayload = (form: typeof createForm) => {
-    const annualInterestRate = Number(form.annualInterestRate)
+    const rate = Number(form.annualInterestRate)
+    const fmtDate = (iso: string) =>
+      iso ? new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : ''
     return {
       name: form.name.trim(),
       shortName: form.shortName.trim(),
       currencyCode: form.currency.trim().toUpperCase(),
-      currency: form.currency.trim().toUpperCase(),
+      digitsAfterDecimal: 2,
+      inMultiplesOf: 0,
       principal: Number(form.principal),
+      minPrincipal: Number(form.principal),
+      maxPrincipal: Number(form.principal),
       numberOfRepayments: Number(form.numberOfRepayments),
-      annualInterestRate,
-      startDate: form.startDate,
-      closeDate: form.closeDate,
+      minNumberOfRepayments: 1,
+      maxNumberOfRepayments: Number(form.numberOfRepayments),
       repaymentEvery: 1,
       repaymentFrequencyType: 2,
-      interestRatePerPeriod: annualInterestRate,
-      interestRateFrequencyType: 3,
+      interestRatePerPeriod: rate,
+      minInterestRatePerPeriod: 0,
+      maxInterestRatePerPeriod: rate,
+      interestRateFrequencyType: 2,
       amortizationType: 1,
       interestType: 0,
       interestCalculationPeriodType: 1,
+      transactionProcessingStrategyCode: 'mifos-standard-strategy',
+      daysInMonthType: 1,
+      daysInYearType: 365,
+      isInterestRecalculationEnabled: false,
       accountingRule: 1,
+      includeInBorrowerCycle: false,
+      startDate: fmtDate(form.startDate),
+      closeDate: fmtDate(form.closeDate),
       locale: 'en',
-      dateFormat: 'yyyy-MM-dd',
+      dateFormat: 'dd MMMM yyyy',
     }
   }
 

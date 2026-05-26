@@ -921,15 +921,14 @@ export default function AccountLookupPage() {
                       <td style={{ padding: '13px 20px' }}>
                         <span style={{
                           display: 'inline-flex', alignItems: 'center', gap: 5,
-                          padding: '3px 10px', borderRadius: 20,
+                          padding: '4px 10px', borderRadius: 20,
                           fontFamily: 'DM Sans, sans-serif', fontSize: 11, fontWeight: 600,
-                          background: tx.entryType?.toUpperCase() === 'CREDIT' ? '#EFF6FF' : tx.entryType?.toUpperCase() === 'DEBIT' ? '#fff' : '#F1F5F9',
-                          color: tx.entryType?.toUpperCase() === 'CREDIT' ? '#1565C0' : tx.entryType?.toUpperCase() === 'DEBIT' ? '#DC2626' : T.textSub,
-                          border: tx.entryType?.toUpperCase() === 'DEBIT' ? '1px solid #FECACA' : tx.entryType?.toUpperCase() === 'CREDIT' ? '1px solid #BFDBFE' : 'none',
+                          background: tx.entryType?.toUpperCase() === 'CREDIT' ? '#ECFDF5' : tx.entryType?.toUpperCase() === 'DEBIT' ? '#FEF2F2' : '#F1F5F9',
+                          color: tx.entryType?.toUpperCase() === 'CREDIT' ? '#047857' : tx.entryType?.toUpperCase() === 'DEBIT' ? '#B91C1C' : T.textSub,
                         }}>
                           {tx.entryType?.toUpperCase() === 'CREDIT' && <ArrowDownToLine style={{ width: 10, height: 10 }} />}
                           {tx.entryType?.toUpperCase() === 'DEBIT'  && <ArrowUpFromLine style={{ width: 10, height: 10 }} />}
-                          {tx.entryType}
+                          {tx.entryType ? tx.entryType.charAt(0).toUpperCase() + tx.entryType.slice(1).toLowerCase() : '—'}
                         </span>
                       </td>
                       <td style={{ padding: '13px 20px', fontFamily: 'Sora, sans-serif', fontSize: 13, fontWeight: 600, color: T.text }}>

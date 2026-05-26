@@ -64,8 +64,8 @@ export function LoanSubNav() {
                 fontWeight: 700,
                 padding: '1px 6px',
                 borderRadius: 20,
-                background: active ? '#0A2F6D' : '#EEF1F6',
-                color: active ? '#fff' : '#7A879F',
+                background: '#DBEAFE',
+                color: '#1D4ED8',
               }}>
                 {tab.badge >= 1000 ? `${(tab.badge / 1000).toFixed(1)}k` : tab.badge}
               </span>
