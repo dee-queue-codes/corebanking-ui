@@ -104,7 +104,7 @@ export function RecentActivity() {
         await Promise.allSettled(
           uniqueIds.map(id =>
             clientsAPI.getById(id).then(r => {
-              const c = r.data as Record<string, unknown>
+              const c = r.data as unknown as Record<string, unknown>
               const first = (c.firstName as string) || ''
               const last  = (c.lastName  as string) || ''
               const full  = `${first} ${last}`.trim()
@@ -150,7 +150,7 @@ export function RecentActivity() {
       )}
 
       {/* List */}
-      <div className="min-h-[200px]">
+      <div className="min-h-50">
         {loading && Array.from({ length: PAGE_SIZE }).map((_, i) => <TxSkeleton key={i} />)}
 
         {!loading && error && (

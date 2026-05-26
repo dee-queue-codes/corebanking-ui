@@ -807,9 +807,9 @@ export default function ClientDetailPage() {
   const [createAccountSaving, setCreateAccountSaving] = useState(false);
   const [createAccountError, setCreateAccountError] = useState("");
   const [showAddressDialog, setShowAddressDialog] = useState(false)
-  const pendingAddressTypeId = useRef(ADDRESS_TYPES.residential.id)
+  const pendingAddressTypeId = useRef<string>(ADDRESS_TYPES.residential.id)
   const [showEditAddressDialog, setShowEditAddressDialog] = useState(false)
-  const [editAddressForm, setEditAddressForm] = useState({ addressId: '', addressTypeId: ADDRESS_TYPES.residential.id, addressLine1: '', addressLine2: '', city: '', stateProvinceId: '', postalCode: '' })
+  const [editAddressForm, setEditAddressForm] = useState<{ addressId: string; addressTypeId: string; addressLine1: string; addressLine2: string; city: string; stateProvinceId: string; postalCode: string }>({ addressId: '', addressTypeId: ADDRESS_TYPES.residential.id, addressLine1: '', addressLine2: '', city: '', stateProvinceId: '', postalCode: '' })
   const [editAddressSaving, setEditAddressSaving] = useState(false)
   const [editAddressError, setEditAddressError] = useState('')
   const [addressForm, setAddressForm] = useState({
@@ -1066,7 +1066,7 @@ export default function ClientDetailPage() {
       .getAddresses(clientId, skipAuthRedirect)
       .then((res) => {
         const split = splitAddresses(
-          clientId,
+          clientId ?? '',
           extractCollection(res.data) as AddressItem[],
         );
         setResidentialAddresses(split.residential);
@@ -1472,7 +1472,7 @@ export default function ClientDetailPage() {
     if (!clientId) return;
     const res = await clientsAPI.getAddresses(clientId, skipAuthRedirect);
     const split = splitAddresses(
-      clientId,
+      clientId ?? '',
       extractCollection(res.data) as AddressItem[],
     );
     setResidentialAddresses(split.residential);
@@ -1524,14 +1524,14 @@ export default function ClientDetailPage() {
         (a) => a.id != null && !existingIds.has(String(a.id)),
       );
       if (newAddr) {
-        rememberAddressType(clientId, newAddr, addressTypeId);
+        rememberAddressType(clientId ?? '', newAddr, addressTypeId);
       }
 
       const residential: AddressItem[] = [];
       const office: AddressItem[] = [];
       for (const addr of allAddresses) {
         const isNew = newAddr != null && addr.id != null && String(addr.id) === String(newAddr.id);
-        const knownType = isNew ? addressTypeId : getAddressTypeId(clientId, addr);
+        const knownType = isNew ? addressTypeId : getAddressTypeId(clientId ?? '', addr);
         if (knownType === ADDRESS_TYPES.office.id) office.push(addr);
         else residential.push(addr);
       }
@@ -2381,7 +2381,7 @@ export default function ClientDetailPage() {
                           setEditAddressError('')
                           setEditAddressForm({
                             addressId: String(addr.id ?? ''),
-                            addressTypeId: getAddressTypeId(clientId, addr),
+                            addressTypeId: getAddressTypeId(clientId ?? '', addr),
                             addressLine1: addr.addressLine1 ?? '',
                             addressLine2: addr.addressLine2 ?? '',
                             city: addr.city ?? '',

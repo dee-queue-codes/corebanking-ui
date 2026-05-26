@@ -347,7 +347,6 @@ export default function ReportsPage() {
 
   const currentCategory = categories.find(c => c.key === selectedCategory) ?? categories[0]
   const selectedReport = currentCategory.reports.find(r => r.key === selectedKey) ?? currentCategory.reports[0]
-  const Icon = selectedReport.icon
   const accentColor = CATEGORY_COLORS[selectedCategory]
 
   const EXCLUDED_COLUMNS = new Set(['officeId', 'accountNumber'])
