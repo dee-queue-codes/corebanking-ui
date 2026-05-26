@@ -1,12 +1,15 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { TrendingUp, AlertTriangle, DollarSign, BarChart2, Clock, Download, Plus } from 'lucide-react'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { T, mockApplications, Panel, PanelHead, Ava, thStyle, tdStyle } from './loanShared'
 import { LoanSubNav } from './LoanSubNav'
+import { NewLoanApplicationDialog } from '@/components/loans/NewLoanApplicationDialog'
 
 export default function LoanOverviewPage() {
   const navigate = useNavigate()
+  const [showDialog, setShowDialog] = useState(false)
 
   const stats = [
     { icon: <DollarSign style={{ width: 16, height: 16 }} />, iconBg: T.blueBg, iconColor: T.blue, label: 'Active Loans', value: '1,284', meta: 'GH₵ 18.4M out', metaColor: T.muted },
@@ -44,7 +47,7 @@ export default function LoanOverviewPage() {
           </h1>
           <div style={{ display: 'flex', gap: 9 }}>
             <Button variant="outline" style={{ fontSize: 13 }}><Download style={{ width: 14, height: 14 }} />Export</Button>
-            <Button style={{ background: T.navy, fontSize: 13 }}><Plus style={{ width: 14, height: 14 }} />New Application</Button>
+            <Button style={{ background: T.navy, fontSize: 13 }} onClick={() => setShowDialog(true)}><Plus style={{ width: 14, height: 14 }} />New Application</Button>
           </div>
         </div>
       </div>
@@ -123,6 +126,7 @@ export default function LoanOverviewPage() {
           </Panel>
         </div>
       </div>
+      <NewLoanApplicationDialog open={showDialog} onOpenChange={setShowDialog} />
     </div>
   )
 }

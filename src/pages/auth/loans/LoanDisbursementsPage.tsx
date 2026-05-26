@@ -48,7 +48,7 @@ export default function LoanDisbursementsPage() {
               <div style={{ display: 'flex', gap: 7 }}>
                 <button style={{ padding: '6px 12px', borderRadius: 8, border: `1px solid ${T.border}`, background: '#EEF1F6', color: '#41506E', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>View</button>
                 {d.status === 'approved' ? (
-                  <button style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: T.green, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>Disburse</button>
+                  <button style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: 'rgb(22, 163, 74)', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>Disburse</button>
                 ) : (
                   <button style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: T.navy, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>Approve</button>
                 )}

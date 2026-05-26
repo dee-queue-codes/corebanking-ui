@@ -328,67 +328,82 @@ export default function LoanProductsPage() {
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-          {products.map(p => (
+          {products.map(p => {
+            const isActive = !p.status || p.status.toLowerCase().includes('active')
+            return (
             <div
               key={p.id}
               style={{
-                background: T.cardBg, border: `1px solid ${T.border}`, borderRadius: 14,
-                padding: 20, display: 'flex', flexDirection: 'column', gap: 14,
-                boxShadow: '0 1px 3px rgba(16,33,73,.04)',
+                background: T.cardBg, border: `1px solid ${T.border}`, borderRadius: 16,
+                overflow: 'hidden', display: 'flex', flexDirection: 'column',
+                boxShadow: '0 2px 8px rgba(16,33,73,.06)',
+                transition: 'box-shadow 0.15s',
               }}
+              onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(16,33,73,.10)')}
+              onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 2px 8px rgba(16,33,73,.06)')}
             >
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, fontFamily: "'Sora', sans-serif", marginBottom: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {p.name}
+              {/* Card header */}
+              <div style={{ padding: '18px 20px 14px', borderBottom: `1px solid ${T.border}` }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: T.ink, fontFamily: "'Sora', sans-serif", marginBottom: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {p.name}
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: T.muted }}>
+                      {p.shortName ?? '-'} · {p.currency}
+                    </div>
                   </div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: T.muted }}>
-                    {p.shortName ?? '-'} · {p.currency}
-                  </div>
-                </div>
-                <div style={{
-                  flexShrink: 0, marginLeft: 8,
-                  padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700,
-                  background: p.status?.toLowerCase().includes('active') !== false ? T.greenBg : '#F1F5F9',
-                  color: p.status?.toLowerCase().includes('active') !== false ? T.green : T.muted,
-                }}>
-                  {p.status ?? 'Active'}
+                  {isActive && (
+                    <div style={{
+                      flexShrink: 0,
+                      display: 'inline-flex', alignItems: 'center', gap: 5,
+                      padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700,
+                      background: T.greenBg, color: T.green,
+                    }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: T.green }} />
+                      Active
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 11 }}>
+              {/* Stats grid */}
+              <div style={{ padding: '14px 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 16px', flex: 1 }}>
                 {[
-                  ['Interest',    `${p.annualInterestRate ?? p.interestRate ?? 0}% p.a.`],
-                  ['Repayments',  String(p.numberOfRepayments ?? '-')],
-                  ['Principal',   `${p.currency} ${p.principal ?? p.minPrincipal ?? 0}`],
-                  ['Description', p.description ?? '-'],
+                  ['Interest',   `${p.annualInterestRate ?? p.interestRate ?? 0}% p.a.`],
+                  ['Repayments', String(p.numberOfRepayments ?? '—')],
+                  ['Principal',  `${p.currency} ${(p.principal ?? p.minPrincipal ?? 0).toLocaleString()}`],
+                  ['Description', p.description || '—'],
                 ].map(([l, v]) => (
                   <div key={l}>
-                    <div style={{ fontSize: 11, color: T.muted, fontWeight: 600 }}>{l}</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, marginTop: 2, color: T.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</div>
+                    <div style={{ fontSize: 10, color: T.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>{l}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{v}</div>
                   </div>
                 ))}
               </div>
 
+              {/* Actions */}
               <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8,
-                borderTop: `1px solid ${T.border}`, paddingTop: 12,
+                display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6,
+                borderTop: `1px solid ${T.border}`, padding: '10px 16px',
+                background: '#FAFBFD',
               }}>
                 <button
                   onClick={() => openEdit(p)}
-                  style={{ background: 'none', border: 'none', color: T.blue, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+                  style={{ padding: '5px 14px', borderRadius: 7, border: `1px solid ${T.border}`, background: '#fff', color: T.blue, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => { setDeleteProduct(p); setDeleteError('') }}
-                  style={{ background: 'none', border: 'none', color: T.red, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+                  style={{ padding: '5px 14px', borderRadius: 7, border: '1px solid #FECACA', background: '#FEF2F2', color: T.red, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}
                 >
                   Delete
                 </button>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
