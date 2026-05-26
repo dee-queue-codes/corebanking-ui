@@ -44,17 +44,17 @@ export function LoanSubNav() {
               marginRight: 28,
               background: 'none',
               border: 'none',
-              borderBottom: active ? '2px solid #3B5BDB' : '2px solid transparent',
+              borderBottom: active ? '2px solid #0A2F6D' : '2px solid transparent',
               fontFamily: "'DM Sans', sans-serif",
               fontSize: 14,
               fontWeight: active ? 700 : 400,
-              color: active ? '#3B5BDB' : '#7A879F',
+              color: active ? '#0A2F6D' : '#7A879F',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
               transition: 'color 0.15s',
               outline: 'none',
             }}
-            onMouseEnter={e => { if (!active) e.currentTarget.style.color = '#3B5BDB' }}
+            onMouseEnter={e => { if (!active) e.currentTarget.style.color = '#0A2F6D' }}
             onMouseLeave={e => { if (!active) e.currentTarget.style.color = '#7A879F' }}
           >
             {tab.label}
@@ -64,7 +64,7 @@ export function LoanSubNav() {
                 fontWeight: 700,
                 padding: '1px 6px',
                 borderRadius: 20,
-                background: active ? '#3B5BDB' : '#EEF1F6',
+                background: active ? '#0A2F6D' : '#EEF1F6',
                 color: active ? '#fff' : '#7A879F',
               }}>
                 {tab.badge >= 1000 ? `${(tab.badge / 1000).toFixed(1)}k` : tab.badge}

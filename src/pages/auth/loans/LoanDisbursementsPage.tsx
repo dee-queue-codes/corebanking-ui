@@ -8,7 +8,10 @@ export default function LoanDisbursementsPage() {
   const tabs = ['Pending (5)', 'Scheduled (8)', 'Disbursed']
 
   return (
-    <div style={{ padding: '24px 28px', minHeight: '100%', background: T.pageBg, fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: '0px 28px', minHeight: '100%', background: T.pageBg, fontFamily: "'DM Sans', sans-serif" }}>
+            
+      <LoanSubNav />
+      
       {/* Page header */}
       <div style={{ marginBottom: 20 }}>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.14em', color: T.muted, textTransform: 'uppercase', marginBottom: 4 }}>LOAN MANAGEMENT</div>
@@ -18,8 +21,6 @@ export default function LoanDisbursementsPage() {
           </h1>
         </div>
       </div>
-
-      <LoanSubNav />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ display: 'flex', gap: 4, background: '#EEF1F6', padding: 4, borderRadius: 10, width: 'fit-content' }}>

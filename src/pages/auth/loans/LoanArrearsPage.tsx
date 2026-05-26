@@ -12,7 +12,10 @@ export default function LoanArrearsPage() {
   ]
 
   return (
-    <div style={{ padding: '24px 28px', minHeight: '100%', background: T.pageBg, fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: '0px 28px', minHeight: '100%', background: T.pageBg, fontFamily: "'DM Sans', sans-serif" }}>
+            
+      <LoanSubNav />
+      
       {/* Page header */}
       <div style={{ marginBottom: 20 }}>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.14em', color: T.muted, textTransform: 'uppercase', marginBottom: 4 }}>LOAN MANAGEMENT</div>
@@ -23,8 +26,6 @@ export default function LoanArrearsPage() {
           <Button variant="outline" style={{ fontSize: 13 }}>Run PAR report</Button>
         </div>
       </div>
-
-      <LoanSubNav />
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
