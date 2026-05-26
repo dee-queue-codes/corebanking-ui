@@ -8,6 +8,7 @@ type RequestConfig = AxiosRequestConfig & { _skipAuthRedirect?: boolean }
 export const clientsAPI = {
   getAll: (params?: Record<string, unknown>, config?: RequestConfig) =>
     http.get<PaginatedResponse<Client>>('/clients', { ...config, params }),
+  getCount: (config?: RequestConfig) => http.get<{ count: number }>('/clients/count', config),
   getById: (id: string, config?: RequestConfig) => http.get<Client>(`/clients/${id}`, config),
   create: (data: Partial<Client>, config?: RequestConfig) => http.post<Client>('/clients', data, config),
   update: (id: string, data: Partial<Client>, config?: RequestConfig) => http.put<Client>(`/clients/${id}`, data, config),

@@ -23,4 +23,8 @@ export const reportsAPI = {
     http.get('/reports/account/transactions', { params }),
   getAccountDailyBalance: (params?: ReportParams) =>
     http.get('/reports/account/daily-balance', { params }),
+  getDepositsMonthly: (params: { fromDate: string; toDate: string }) =>
+    http.get('/reports/deposits/monthly', { params }),
+  getCreditsMonthly: (params: { fromDate: string; toDate: string }) =>
+    http.get('/reports/credits/monthly', { params }),
 }

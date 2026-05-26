@@ -25,4 +25,5 @@ export const accountsAPI = {
   createWithClient: (data: Record<string, unknown>, config?: RequestConfig) => http.post<Account>('/accounts/with-client', data, config),
   approve: (accountNumber: string, data: ApproveAccountRequest, config?: RequestConfig) => http.post<Account>(`/accounts/${accountNumber}/approve`, data, config),
   activate: (accountNumber: string, data: ActivateAccountRequest, config?: RequestConfig) => http.post<Account>(`/accounts/${accountNumber}/activate`, data, config),
+  getActiveCount: (config?: RequestConfig) => http.get<{ count: number }>('/accounts/active/count', config),
 }

@@ -1,2 +1,5 @@
 export * from './StatsCard'
 export * from './QuickAction'
+export * from './KpiStrip'
+export * from './TxVolumeChart'
+export * from './ClientGrowthChart'
