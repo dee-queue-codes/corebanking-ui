@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Users, CreditCard, TrendingUp, Clock, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { Users, CreditCard, TrendingUp, TrendingDown, Clock, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { accountsAPI } from '@/services/clients/accountsAPI'
 import { clientsAPI } from '@/services/clients/clientsAPI'
 import { reportsAPI } from '@/services/reports/reportsAPI'
@@ -81,10 +81,11 @@ interface KpiData {
   totalClients: number
   activeAccounts: number
   depositsThisMonth: number
+  withdrawalsThisMonth: number
 }
 
 export function KpiStrip() {
-  const [data, setData] = useState<KpiData>({ totalClients: 0, activeAccounts: 0, depositsThisMonth: 0 })
+  const [data, setData] = useState<KpiData>({ totalClients: 0, activeAccounts: 0, depositsThisMonth: 0, withdrawalsThisMonth: 0 })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -92,22 +93,25 @@ export function KpiStrip() {
       clientsAPI.getCount(),
       accountsAPI.getActiveCount(),
       reportsAPI.getDepositsMonthly({ fromDate: FROM_DATE, toDate: TO_DATE }),
-    ]).then(([clients, accounts, deposits]) => {
+      reportsAPI.getCreditsMonthly({ fromDate: FROM_DATE, toDate: TO_DATE }),
+    ]).then(([clients, accounts, deposits, withdrawals]) => {
       setData({
-        totalClients:      clients.status   === 'fulfilled' ? extractCount(clients.value.data)          : 0,
-        activeAccounts:    accounts.status  === 'fulfilled' ? extractCount(accounts.value.data)         : 0,
-        depositsThisMonth: deposits.status  === 'fulfilled' ? extractLatestAmount(deposits.value.data) : 0,
+        totalClients:         clients.status     === 'fulfilled' ? extractCount(clients.value.data)              : 0,
+        activeAccounts:       accounts.status    === 'fulfilled' ? extractCount(accounts.value.data)             : 0,
+        depositsThisMonth:    deposits.status    === 'fulfilled' ? extractLatestAmount(deposits.value.data)      : 0,
+        withdrawalsThisMonth: withdrawals.status === 'fulfilled' ? extractLatestAmount(withdrawals.value.data)   : 0,
       })
       setLoading(false)
     })
   }, [])
 
   return (
-    <div className="grid grid-cols-4 gap-4 mb-6">
-      <StatCard loading={loading} label="Total Clients"            value={data.totalClients.toLocaleString()}     sub="+12.4%" up={true}  iconBg="bg-blue-50"    icon={<Users      className="w-5 h-5 text-blue-600"    />} />
-      <StatCard loading={loading} label="Active Accounts"          value={data.activeAccounts.toLocaleString()}   sub="+8.1%"  up={true}  iconBg="bg-violet-50"  icon={<CreditCard className="w-5 h-5 text-violet-600"  />} />
-      <StatCard loading={loading} label={`Deposits (${CURRENT_MONTH})`} value={fmtAmount(data.depositsThisMonth)} sub="+25.8%" up={true}  iconBg="bg-emerald-50" icon={<TrendingUp className="w-5 h-5 text-emerald-600" />} />
-      <StatCard loading={false}   label="Pending KYC"              value="23"                                     sub="-4.2%"  up={false} iconBg="bg-orange-50"  icon={<Clock      className="w-5 h-5 text-orange-500"  />} />
+    <div className="grid grid-cols-5 gap-4 mb-6">
+      <StatCard loading={loading} label="Total Clients"                  value={data.totalClients.toLocaleString()}        sub="+12.4%" up={true}  iconBg="bg-blue-50"    icon={<Users        className="w-5 h-5 text-blue-600"    />} />
+      <StatCard loading={loading} label="Active Accounts"                value={data.activeAccounts.toLocaleString()}      sub="+8.1%"  up={true}  iconBg="bg-violet-50"  icon={<CreditCard   className="w-5 h-5 text-violet-600"  />} />
+      <StatCard loading={loading} label={`Deposits (${CURRENT_MONTH})`}  value={fmtAmount(data.depositsThisMonth)}         sub="+25.8%" up={true}  iconBg="bg-emerald-50" icon={<TrendingUp   className="w-5 h-5 text-emerald-600" />} />
+      <StatCard loading={loading} label={`Withdrawals (${CURRENT_MONTH})`} value={fmtAmount(data.withdrawalsThisMonth)}   sub="+8.3%"  up={false} iconBg="bg-red-50"     icon={<TrendingDown className="w-5 h-5 text-red-500"     />} />
+      <StatCard loading={false}   label="Pending KYC"                    value="23"                                        sub="-4.2%"  up={false} iconBg="bg-orange-50"  icon={<Clock        className="w-5 h-5 text-orange-500"  />} />
     </div>
   )
 }
