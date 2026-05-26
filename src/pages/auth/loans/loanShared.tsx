@@ -3,7 +3,7 @@ import React from 'react'
 // ── Design tokens ─────────────────────────────────────────────────────────────
 export const T = {
   navy: '#002663',
-  blue: '#3B5BDB',  blueBg: '#EEF2FF',  blueBorder: '#C7D2FE',
+  blue: '#0A2F6D',  blueBg: '#EEF2FF',  blueBorder: '#C7D2FE',
   green: '#059669', greenBg: '#ECFDF5',
   amber: '#B45309', amberBg: '#FFFBEB',
   red: '#DC2626',   redBg: '#FEF2F2',
@@ -30,17 +30,17 @@ export const mockApplications: Array<{
   id: string; clientName: string; initials: string; color: string
   product: string; amount: string; stage: string; officer: string; submitted: string
 }> = [
-  { id: 'LN-20451', clientName: 'Kwame Mensah',  initials: 'KM', color: '#3B5BDB', product: 'SME Working Capital', amount: 'GH₵ 85,000',  stage: 'Under Review', officer: 'A. Owusu',  submitted: '25 May' },
+  { id: 'LN-20451', clientName: 'Kwame Mensah',  initials: 'KM', color: '#0A2F6D', product: 'SME Working Capital', amount: 'GH₵ 85,000',  stage: 'Under Review', officer: 'A. Owusu',  submitted: '25 May' },
   { id: 'LN-20450', clientName: 'Nana Addai',    initials: 'NA', color: '#B45309', product: 'Asset Finance',       amount: 'GH₵ 64,000',  stage: 'Under Review', officer: 'K. Asante', submitted: '25 May' },
   { id: 'LN-20448', clientName: 'Abena Boateng', initials: 'AB', color: '#059669', product: 'Salary Advance',      amount: 'GH₵ 12,500',  stage: 'Approved',     officer: 'K. Asante', submitted: '24 May' },
-  { id: 'LN-20439', clientName: 'Fiifi Brown',   initials: 'FB', color: '#3B5BDB', product: 'Group Loan',          amount: 'GH₵ 18,000',  stage: 'To Disburse',  officer: 'V. Yeboah', submitted: '23 May' },
+  { id: 'LN-20439', clientName: 'Fiifi Brown',   initials: 'FB', color: '#0A2F6D', product: 'Group Loan',          amount: 'GH₵ 18,000',  stage: 'To Disburse',  officer: 'V. Yeboah', submitted: '23 May' },
   { id: 'LN-20445', clientName: 'Ama Owusu',     initials: 'AO', color: '#7C3AED', product: 'Mortgage',            amount: 'GH₵ 320,000', stage: 'Submitted',    officer: 'V. Yeboah', submitted: '25 May' },
   { id: 'LN-20444', clientName: 'Esi Tetteh',    initials: 'ET', color: '#059669', product: 'Salary Advance',      amount: 'GH₵ 9,500',   stage: 'Submitted',    officer: 'A. Owusu',  submitted: '25 May' },
   { id: 'LN-20441', clientName: 'Kofi Asare',    initials: 'KA', color: '#DC2626', product: 'Micro Group Loan',    amount: 'GH₵ 6,000',   stage: 'Rejected',     officer: 'K. Asante', submitted: '22 May' },
 ]
 
 export const mockActiveLoans: ActiveLoan[] = [
-  { id: 'LN-20310', clientName: 'Kwame Mensah',  initials: 'KM', color: '#3B5BDB', product: 'SME Working Capital', outstanding: 'GH₵ 62,400',  nextDue: '02 Jun',         repaidPct: 42,  status: 'Current',    principal: 'GH₵ 100,000', rate: '24% p.a.', term: '12 months', disbursed: '10 Jan 2026', maturity: '10 Jan 2027', officer: 'A. Owusu' },
+  { id: 'LN-20310', clientName: 'Kwame Mensah',  initials: 'KM', color: '#0A2F6D', product: 'SME Working Capital', outstanding: 'GH₵ 62,400',  nextDue: '02 Jun',         repaidPct: 42,  status: 'Current',    principal: 'GH₵ 100,000', rate: '24% p.a.', term: '12 months', disbursed: '10 Jan 2026', maturity: '10 Jan 2027', officer: 'A. Owusu' },
   { id: 'LN-20288', clientName: 'Yaw Darko',     initials: 'YD', color: '#B45309', product: 'Asset Finance',       outstanding: 'GH₵ 118,900', nextDue: '28 May',         repaidPct: 18,  status: 'Due Soon',   principal: 'GH₵ 140,000', rate: '21% p.a.', term: '24 months', disbursed: '05 Mar 2026', maturity: '05 Mar 2028', officer: 'K. Asante' },
   { id: 'LN-20142', clientName: 'Adwoa Mensa',   initials: 'AM', color: '#DC2626', product: 'Group Loan',          outstanding: 'GH₵ 4,200',   nextDue: '14d overdue',    repaidPct: 71,  status: 'In Arrears', principal: 'GH₵ 8,000',   rate: '8% flat',  term: '12 months', disbursed: '12 Aug 2025', maturity: '12 Aug 2026', officer: 'V. Yeboah' },
   { id: 'LN-20097', clientName: 'Ama Owusu',     initials: 'AO', color: '#7C3AED', product: 'Mortgage',            outstanding: 'GH₵ 298,000', nextDue: '05 Jun',         repaidPct: 9,   status: 'Current',    principal: 'GH₵ 320,000', rate: '18% p.a.', term: '15 years',  disbursed: '20 Feb 2026', maturity: '20 Feb 2041', officer: 'A. Owusu' },
@@ -48,13 +48,13 @@ export const mockActiveLoans: ActiveLoan[] = [
 ]
 
 export const mockDisbursements: Array<{ clientName: string; initials: string; color: string; loanId: string; product: string; amount: string; detail: string; approvedBy: string | null; status: string }> = [
-  { clientName: 'Fiifi Brown',   initials: 'FB', color: '#3B5BDB', loanId: 'LN-20439', product: 'Group Loan',     amount: 'GH₵ 18,000', detail: 'value date 26 May',          approvedBy: 'V. Yeboah', status: 'approved' },
+  { clientName: 'Fiifi Brown',   initials: 'FB', color: '#0A2F6D', loanId: 'LN-20439', product: 'Group Loan',     amount: 'GH₵ 18,000', detail: 'value date 26 May',          approvedBy: 'V. Yeboah', status: 'approved' },
   { clientName: 'Abena Boateng', initials: 'AB', color: '#059669', loanId: 'LN-20448', product: 'Salary Advance', amount: 'GH₵ 12,500', detail: 'MoMo · value date 27 May',   approvedBy: null,        status: 'checker' },
   { clientName: 'Nana Addai',    initials: 'NA', color: '#B45309', loanId: 'LN-20450', product: 'Asset Finance',  amount: 'GH₵ 64,000', detail: 'bank transfer',              approvedBy: null,        status: 'checker' },
 ]
 
 export const mockRepaymentHistory = [
-  { clientName: 'Kwame Mensah', initials: 'KM', color: '#3B5BDB', method: 'MoMo', date: '25 May', amount: 'GH₵ 3,400' },
+  { clientName: 'Kwame Mensah', initials: 'KM', color: '#0A2F6D', method: 'MoMo', date: '25 May', amount: 'GH₵ 3,400' },
   { clientName: 'Kojo Baah',    initials: 'KB', color: '#059669', method: 'Bank', date: '25 May', amount: 'GH₵ 1,150' },
   { clientName: 'Ama Owusu',    initials: 'AO', color: '#7C3AED', method: 'Bank', date: '24 May', amount: 'GH₵ 5,900' },
   { clientName: 'Yaw Darko',    initials: 'YD', color: '#B45309', method: 'Cash', date: '24 May', amount: 'GH₵ 2,000' },
@@ -89,7 +89,7 @@ export const mockCollateral = [
 ]
 
 export const mockGuarantors = [
-  { name: 'Joseph Annan',  initials: 'JA', color: '#3B5BDB', relationship: 'Employer',         guaranteed: 'GH₵ 12,500', loanId: 'LN-20448', status: 'Active' },
+  { name: 'Joseph Annan',  initials: 'JA', color: '#0A2F6D', relationship: 'Employer',         guaranteed: 'GH₵ 12,500', loanId: 'LN-20448', status: 'Active' },
   { name: 'Grace Mensah',  initials: 'GM', color: '#059669', relationship: 'Spouse',           guaranteed: 'GH₵ 40,000', loanId: 'LN-20451', status: 'Active' },
   { name: 'Samuel Koomson',initials: 'SK', color: '#B45309', relationship: 'Business partner', guaranteed: 'GH₵ 30,000', loanId: 'LN-20450', status: 'Verification' },
 ]
