@@ -112,12 +112,12 @@ export function Header({ onMenuToggle }: HeaderProps) {
       <button
         onClick={onMenuToggle}
         title="Toggle sidebar"
-        className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0"
+        className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0"
       >
         <Menu className="w-4 h-4" />
       </button>
 
-      <div className="h-6 w-px bg-gray-200 flex-shrink-0" />
+      <div className="h-6 w-px bg-gray-200 shrink-0" />
 
       {/* Search */}
       <form onSubmit={handleSearch} className="flex-1 max-w-xs">
@@ -199,13 +199,13 @@ export function Header({ onMenuToggle }: HeaderProps) {
                 return (
                   <DropdownMenuItem key={n.id} className={`px-4 py-3 cursor-pointer focus:bg-gray-50 ${isUnread ? 'bg-blue-50/40' : ''}`}>
                     <div className="flex items-start gap-3 w-full">
-                      <div className={`w-8 h-8 rounded-full ${n.iconBg} flex items-center justify-center flex-shrink-0 mt-0.5`}>
+                      <div className={`w-8 h-8 rounded-full ${n.iconBg} flex items-center justify-center shrink-0 mt-0.5`}>
                         <Icon className={`h-3.5 w-3.5 ${n.iconColor}`} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           <p className="text-xs font-medium text-gray-800 truncate">{n.title}</p>
-                          {isUnread && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />}
+                          {isUnread && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />}
                         </div>
                         <p className="text-[10px] text-gray-500 mt-0.5 truncate">{n.desc}</p>
                         <p className="text-[10px] text-gray-400 mt-0.5">{n.time}</p>
@@ -223,7 +223,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <div className="h-6 w-px bg-gray-200 mx-1 flex-shrink-0" />
+        <div className="h-6 w-px bg-gray-200 mx-1 shrink-0" />
 
         {/* User profile */}
         <DropdownMenu>

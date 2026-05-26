@@ -59,7 +59,7 @@ export default function NewPrepaidProductPage() {
 
       <div className="flex gap-6 h-full">
         {/* Left nav */}
-        <div className="w-44 flex-shrink-0">
+        <div className="w-44 shrink-0">
           <div className="bg-white rounded-lg border border-gray-200 p-3 space-y-1">
             {sections.map(s => (
               <button

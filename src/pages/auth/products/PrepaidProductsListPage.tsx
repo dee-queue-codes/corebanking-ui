@@ -62,7 +62,7 @@ export default function PrepaidProductsListPage() {
             <Card key={product.id} className="p-5 bg-white hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
                     <CreditCard className="w-6 h-6 text-violet-600" />
                   </div>
                   <div>
