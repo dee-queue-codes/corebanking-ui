@@ -36,8 +36,8 @@ export default function LoanApprovalsPage() {
                 <div style={{ fontSize: 12, color: T.muted, marginTop: 3, fontFamily: "'DM Sans',sans-serif" }}>{a.detail} · maker: {a.maker} · {a.ago}</div>
               </div>
               <div style={{ display: 'flex', gap: 7 }}>
-                <button style={{ padding: '6px 12px', borderRadius: 8, border: `1px solid ${T.border}`, background: '#EEF1F6', color: '#41506E', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>Reject</button>
-                <button style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: T.navy, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>Approve</button>
+                <button style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid #fca5a5', background: '#fef2f2', color: '#dc2626', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>Reject</button>
+                <button style={{ padding: '6px 12px', borderRadius: 8, border: 'none', background: '#16a34a', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>Approve</button>
               </div>
             </div>
           ))}
