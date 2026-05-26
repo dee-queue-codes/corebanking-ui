@@ -386,7 +386,7 @@ export default function AddClientPage() {
                                 'text-gray-400 cursor-default'
                   }`}
                 >
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[11px] font-bold ${
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold ${
                     isCurrent ? 'bg-white/20 text-white' :
                     isDone    ? 'bg-emerald-100 text-emerald-600' :
                                 'bg-gray-100 text-gray-400'
@@ -396,7 +396,7 @@ export default function AddClientPage() {
                   <div className="flex-1 min-w-0">
                     <p className={`text-xs font-semibold truncate ${isCurrent ? 'text-white' : isDone ? 'text-gray-700' : 'text-gray-400'}`}>{step.label}</p>
                   </div>
-                  <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isCurrent ? 'text-white/70' : isDone ? 'text-emerald-400' : 'text-gray-300'}`} />
+                  <Icon className={`w-3.5 h-3.5 shrink-0 ${isCurrent ? 'text-white/70' : isDone ? 'text-emerald-400' : 'text-gray-300'}`} />
                 </button>
               )
             })}

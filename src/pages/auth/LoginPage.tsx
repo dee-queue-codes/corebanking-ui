@@ -87,7 +87,7 @@ export default function LoginPage() {
               'SOC 2 certified infrastructure',
             ].map(item => (
               <li key={item} className="flex items-center gap-3">
-                <span className="w-1.5 h-1.5 rounded-full bg-white/40 flex-shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-white/40 shrink-0" />
                 <span className="text-white/55 text-[13.5px] font-medium">{item}</span>
               </li>
             ))}
@@ -129,7 +129,7 @@ export default function LoginPage() {
             {/* Error */}
             {error && (
               <div className="flex items-start gap-2.5 p-3 bg-red-50 border border-red-100 rounded-xl">
-                <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                 <p className="text-sm text-red-600 font-medium">{error}</p>
               </div>
             )}

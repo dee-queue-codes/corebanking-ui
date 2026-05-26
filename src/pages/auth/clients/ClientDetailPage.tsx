@@ -2433,7 +2433,7 @@ export default function ClientDetailPage() {
                 value={selectedAccountFilter}
                 onValueChange={setSelectedAccountFilter}
               >
-                <SelectTrigger className="h-8 text-xs w-[260px] bg-white border-gray-200">
+                <SelectTrigger className="h-8 text-xs w-65 bg-white border-gray-200">
                   <SelectValue placeholder="All Accounts" />
                 </SelectTrigger>
                 <SelectContent>

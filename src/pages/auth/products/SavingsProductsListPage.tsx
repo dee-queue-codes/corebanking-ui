@@ -287,7 +287,7 @@ export default function SavingsProductsListPage() {
             <Card key={product.id} className="p-5 bg-white hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedProduct(product)}>
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
                     <PiggyBank className="w-6 h-6 text-green-600" />
                   </div>
                   <div>
