@@ -88,7 +88,7 @@ export default function NewPrepaidProductPage() {
                 <div>
                   <Label className="text-xs text-gray-600 mb-1.5 block">Product Name <span className="text-red-500">*</span></Label>
                   <Input placeholder="Enter product name..." className="border-gray-200 text-sm" />
-                </div>
+                </div>z
                 <div>
                   <Label className="text-xs text-gray-600 mb-1.5 block">Short Name <span className="text-red-500">*</span></Label>
                   <Input placeholder="Enter short name..." className="border-gray-200 text-sm" />
