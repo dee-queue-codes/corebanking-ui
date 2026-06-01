@@ -56,4 +56,13 @@ export const loansAPI = {
 
   disburse: (id: string | number, data: Record<string, unknown>, config?: RequestConfig) =>
     http.post(`/loans/${id}/disburse`, data, config),
+
+  getRepaymentSchedule: (id: string | number, config?: RequestConfig) =>
+    http.get(`/loans/${id}/repaymentschedule`, config),
+
+  makeRepayment: (id: string | number, data: Record<string, unknown>, config?: RequestConfig) =>
+    http.post(`/loans/${id}/transactions?command=repayment`, data, config),
+
+  getTransactions: (id: string | number, config?: RequestConfig) =>
+    http.get(`/loans/${id}/transactions`, config),
 }

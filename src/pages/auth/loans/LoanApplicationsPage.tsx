@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { T, mockApplications, Panel, Ava, thStyle, tdStyle } from './loanShared'
+import { T, Panel, Ava, thStyle, tdStyle } from './loanShared'
 import { LoanSubNav } from './LoanSubNav'
 import { loansAPI } from '@/services/loans/loansAPI'
 import { productsAPI, type LoanProduct } from '@/services/products/productsAPI'
@@ -37,6 +37,84 @@ function todayIso(): string {
   return new Date().toISOString().split('T')[0]
 }
 
+function getInitials(name: string): string {
+  const parts = name.trim().split(' ').filter(Boolean)
+  if (parts.length === 0) return 'NA'
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
+const COLORS = ['#0A2F6D', '#B45309', '#059669', '#7C3AED', '#DC2626', '#0891B2', '#4F46E5']
+function getColor(id: string | number): string {
+  const num = typeof id === 'number' ? id : parseInt(String(id), 10) || 0
+  return COLORS[Math.abs(num) % COLORS.length]
+}
+
+function formatCurrency(amount: number | undefined): string {
+  if (amount === undefined || amount === null || isNaN(amount)) return 'N/A'
+  return `GH₵ ${amount.toLocaleString('en-GH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+}
+
+function formatSubmittedDate(raw: unknown): string {
+  if (!raw) return '—'
+  if (Array.isArray(raw) && raw.length >= 3) {
+    const [, m, d] = raw as number[]
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    return `${d} ${months[m - 1]}`
+  }
+  if (typeof raw === 'string') {
+    const d = new Date(raw)
+    if (!isNaN(d.getTime())) return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })
+  }
+  return '—'
+}
+
+function getLoanStage(loan: Record<string, unknown>): string {
+  const status = loan.status
+  if (!status) return 'Submitted'
+  if (typeof status === 'object' && status !== null) {
+    const s = status as Record<string, unknown>
+    const id = Number(s.id ?? 0)
+    if (id === 500) return 'Rejected'
+    if (id === 200) return 'Approved'
+    if (id === 300) return 'To Disburse'
+    const code = String(s.code ?? '').toLowerCase()
+    if (code.includes('reject')) return 'Rejected'
+    if (code.includes('active')) return 'To Disburse'
+    if (code.includes('approved') && !code.includes('pending')) return 'Approved'
+  }
+  const s = String(status).toLowerCase()
+  if (s.includes('reject')) return 'Rejected'
+  if (s.includes('active')) return 'To Disburse'
+  if (s.includes('approved')) return 'Approved'
+  return 'Submitted'
+}
+
+function toLoanDisplay(loan: Record<string, unknown>) {
+  const id = text(loan.accountNo) || text(loan.id)
+  const clientName = text(loan.clientName) || text(loan.clientDisplayName) || `Client #${text(loan.clientId)}`
+  const initials = getInitials(clientName)
+  const color = getColor(loan.id as string | number ?? 0)
+  const product = text(loan.loanProductName) || text(loan.productName) || '—'
+  const amount = formatCurrency(Number(loan.principal ?? 0))
+  const stage = getLoanStage(loan)
+  const officer = text(loan.loanOfficerName) || '—'
+  const timeline = loan.timeline as Record<string, unknown> | undefined
+  const submitted = formatSubmittedDate(timeline?.submittedOnDate ?? loan.submittedOnDate)
+  return { id, clientName, initials, color, product, amount, stage, officer, submitted }
+}
+
+function extractLoans(data: unknown): Record<string, unknown>[] {
+  if (Array.isArray(data)) return data as Record<string, unknown>[]
+  if (data && typeof data === 'object') {
+    const d = data as Record<string, unknown>
+    if (Array.isArray(d.pageItems)) return d.pageItems as Record<string, unknown>[]
+    if (Array.isArray(d.content)) return d.content as Record<string, unknown>[]
+    if (Array.isArray(d.data)) return d.data as Record<string, unknown>[]
+  }
+  return []
+}
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 interface ClientResult {
@@ -63,8 +141,28 @@ export default function LoanApplicationsPage() {
   const stageDots: Record<string, string> = {
     Submitted: T.muted, 'Under Review': T.blue, Approved: T.amber, 'To Disburse': T.green, Rejected: T.red,
   }
-  const grouped = stages.reduce<Record<string, typeof mockApplications>>((acc, s) => {
-    acc[s] = mockApplications.filter(a => a.stage === s); return acc
+
+  // Real data state
+  const [loans, setLoans] = useState<ReturnType<typeof toLoanDisplay>[]>([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
+
+  const loadLoans = () => {
+    setLoading(true)
+    setLoadError('')
+    loansAPI.getApplications({ limit: 200, offset: 0 }, { _skipAuthRedirect: true })
+      .then(res => {
+        const raw = extractLoans(res.data)
+        setLoans(raw.map(toLoanDisplay))
+      })
+      .catch(() => setLoadError('Could not load loan applications.'))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { loadLoans() }, [])
+
+  const grouped = stages.reduce<Record<string, typeof loans>>((acc, s) => {
+    acc[s] = loans.filter(a => a.stage === s); return acc
   }, {})
 
   // New application dialog
@@ -140,7 +238,6 @@ export default function LoanApplicationsPage() {
 
   const selectedProduct = loanProducts.find(p => String(p.id) === form.productId) ?? null
 
-  // Auto-fill from selected product
   useEffect(() => {
     if (!selectedProduct) return
     setForm(p => ({
@@ -195,6 +292,7 @@ export default function LoanApplicationsPage() {
         setForm(emptyForm())
         setFormSuccess('')
         setClientResults([])
+        loadLoans()
       }, 1500)
     } catch (err) {
       setFormError(getApiError(err, 'Failed to submit loan application.'))
@@ -245,7 +343,11 @@ export default function LoanApplicationsPage() {
           </div>
         </div>
 
-        {view === 'board' ? (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: 60, color: T.muted, fontSize: 14, fontFamily: "'DM Sans',sans-serif" }}>Loading applications…</div>
+        ) : loadError ? (
+          <div style={{ textAlign: 'center', padding: 40, color: T.red, fontSize: 14, fontFamily: "'DM Sans',sans-serif" }}>{loadError}</div>
+        ) : view === 'board' ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12, alignItems: 'start' }}>
             {stages.map(stage => (
               <div key={stage} style={{ background: '#F4F6FB', border: `1px solid #E9EDF5`, borderRadius: 13, padding: 11, display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -255,8 +357,10 @@ export default function LoanApplicationsPage() {
                   </span>
                   <span style={{ fontSize: 12, fontWeight: 700, color: T.muted, background: T.cardBg, border: `1px solid ${T.border}`, borderRadius: 20, padding: '1px 7px', fontFamily: "'DM Sans',sans-serif" }}>{grouped[stage]?.length ?? 0}</span>
                 </div>
-                {(grouped[stage] ?? []).map(app => (
-                  <div key={app.id} style={{ background: T.cardBg, border: `1px solid ${T.border}`, borderRadius: 10, padding: 11, boxShadow: '0 1px 2px rgba(16,33,73,.04)', cursor: 'grab' }}>
+                {(grouped[stage] ?? []).length === 0 ? (
+                  <div style={{ padding: '20px 8px', textAlign: 'center', color: T.muted, fontSize: 12, fontFamily: "'DM Sans',sans-serif" }}>No applications</div>
+                ) : (grouped[stage] ?? []).map(app => (
+                  <div key={app.id} style={{ background: T.cardBg, border: `1px solid ${T.border}`, borderRadius: 10, padding: 11, boxShadow: '0 1px 2px rgba(16,33,73,.04)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                       <Ava initials={app.initials} color={app.color} size={26} />
                       <div><div style={{ fontWeight: 700, fontSize: 12, color: T.ink, fontFamily: "'DM Sans',sans-serif" }}>{app.clientName}</div><div style={{ fontSize: 11, color: T.muted }}>{app.id}</div></div>
@@ -273,21 +377,25 @@ export default function LoanApplicationsPage() {
           </div>
         ) : (
           <Panel>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead><tr>{['Applicant', 'Product', 'Amount', 'Stage', 'Officer', 'Submitted'].map(h => <th key={h} style={thStyle}>{h}</th>)}</tr></thead>
-              <tbody>
-                {mockApplications.map(a => (
-                  <tr key={a.id} style={{ cursor: 'pointer' }}>
-                    <td style={tdStyle}><div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Ava initials={a.initials} color={a.color} /><div><div style={{ fontWeight: 700 }}>{a.clientName}</div><div style={{ fontSize: 11, color: T.muted }}>{a.id}</div></div></div></td>
-                    <td style={tdStyle}>{a.product}</td>
-                    <td style={{ ...tdStyle, fontWeight: 700 }}>{a.amount}</td>
-                    <td style={tdStyle}><StatusBadge status={a.stage} /></td>
-                    <td style={tdStyle}>{a.officer}</td>
-                    <td style={{ ...tdStyle, color: T.muted }}>{a.submitted}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            {loans.length === 0 ? (
+              <div style={{ padding: 40, textAlign: 'center', color: T.muted, fontSize: 14, fontFamily: "'DM Sans',sans-serif" }}>No applications found.</div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead><tr>{['Applicant', 'Product', 'Amount', 'Stage', 'Officer', 'Submitted'].map(h => <th key={h} style={thStyle}>{h}</th>)}</tr></thead>
+                <tbody>
+                  {loans.map(a => (
+                    <tr key={a.id} style={{ cursor: 'pointer' }}>
+                      <td style={tdStyle}><div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Ava initials={a.initials} color={a.color} /><div><div style={{ fontWeight: 700 }}>{a.clientName}</div><div style={{ fontSize: 11, color: T.muted }}>{a.id}</div></div></div></td>
+                      <td style={tdStyle}>{a.product}</td>
+                      <td style={{ ...tdStyle, fontWeight: 700 }}>{a.amount}</td>
+                      <td style={tdStyle}><StatusBadge status={a.stage} /></td>
+                      <td style={tdStyle}>{a.officer}</td>
+                      <td style={{ ...tdStyle, color: T.muted }}>{a.submitted}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </Panel>
         )}
       </div>
@@ -301,7 +409,6 @@ export default function LoanApplicationsPage() {
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-
             {/* Client search */}
             <div>
               <Label className="mb-1.5 block text-sm text-gray-700">Client <span className="text-red-500">*</span></Label>
@@ -328,7 +435,6 @@ export default function LoanApplicationsPage() {
                 </button>
               </form>
 
-              {/* Results list */}
               {clientResults.length > 0 && !form.selectedClient && (
                 <div style={{ marginTop: 6, borderRadius: 8, border: '1px solid #E5E7EB', overflow: 'hidden' }}>
                   {clientResults.map((c, i) => (
@@ -351,7 +457,6 @@ export default function LoanApplicationsPage() {
                 </div>
               )}
 
-              {/* Selected client chip */}
               {form.selectedClient && (
                 <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 8, background: '#EFF6FF', border: '1px solid #BFDBFE' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -385,60 +490,27 @@ export default function LoanApplicationsPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {/* Principal */}
               <div>
                 <Label className="mb-1.5 block text-sm text-gray-700">Principal Amount <span className="text-red-500">*</span></Label>
-                <Input
-                  type="number" min="0.01" step="0.01" placeholder="0.00"
-                  value={form.principal}
-                  onChange={e => setForm(p => ({ ...p, principal: e.target.value }))}
-                  className="bg-gray-50 border-gray-300"
-                />
+                <Input type="number" min="0.01" step="0.01" placeholder="0.00" value={form.principal} onChange={e => setForm(p => ({ ...p, principal: e.target.value }))} className="bg-gray-50 border-gray-300" />
               </div>
-
-              {/* Repayments */}
               <div>
                 <Label className="mb-1.5 block text-sm text-gray-700">No. of Repayments <span className="text-red-500">*</span></Label>
-                <Input
-                  type="number" min="1" step="1" placeholder="12"
-                  value={form.numberOfRepayments}
-                  onChange={e => setForm(p => ({ ...p, numberOfRepayments: e.target.value }))}
-                  className="bg-gray-50 border-gray-300"
-                />
+                <Input type="number" min="1" step="1" placeholder="12" value={form.numberOfRepayments} onChange={e => setForm(p => ({ ...p, numberOfRepayments: e.target.value }))} className="bg-gray-50 border-gray-300" />
               </div>
-
-              {/* Interest rate */}
               <div>
                 <Label className="mb-1.5 block text-sm text-gray-700">Interest Rate (%)</Label>
-                <Input
-                  type="number" min="0" step="0.01" placeholder="10"
-                  value={form.interestRatePerPeriod}
-                  onChange={e => setForm(p => ({ ...p, interestRatePerPeriod: e.target.value }))}
-                  className="bg-gray-50 border-gray-300"
-                />
+                <Input type="number" min="0" step="0.01" placeholder="10" value={form.interestRatePerPeriod} onChange={e => setForm(p => ({ ...p, interestRatePerPeriod: e.target.value }))} className="bg-gray-50 border-gray-300" />
               </div>
-
-              {/* Submitted on */}
               <div>
                 <Label className="mb-1.5 block text-sm text-gray-700">Submitted On <span className="text-red-500">*</span></Label>
-                <Input
-                  type="date"
-                  value={form.submittedOnDate}
-                  onChange={e => setForm(p => ({ ...p, submittedOnDate: e.target.value }))}
-                  className="bg-gray-50 border-gray-300"
-                />
+                <Input type="date" value={form.submittedOnDate} onChange={e => setForm(p => ({ ...p, submittedOnDate: e.target.value }))} className="bg-gray-50 border-gray-300" />
               </div>
             </div>
 
-            {/* Expected disbursement date */}
             <div>
               <Label className="mb-1.5 block text-sm text-gray-700">Expected Disbursement Date <span className="text-red-500">*</span></Label>
-              <Input
-                type="date"
-                value={form.expectedDisbursementDate}
-                onChange={e => setForm(p => ({ ...p, expectedDisbursementDate: e.target.value }))}
-                className="bg-gray-50 border-gray-300"
-              />
+              <Input type="date" value={form.expectedDisbursementDate} onChange={e => setForm(p => ({ ...p, expectedDisbursementDate: e.target.value }))} className="bg-gray-50 border-gray-300" />
             </div>
 
             {formError   && <p className="text-sm text-red-600">{formError}</p>}

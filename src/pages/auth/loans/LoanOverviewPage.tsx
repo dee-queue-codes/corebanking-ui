@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   TrendingUp,
@@ -13,7 +13,6 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Button } from "@/components/ui/button";
 import {
   T,
-  mockApplications,
   Panel,
   PanelHead,
   Ava,
@@ -22,10 +21,128 @@ import {
 } from "./loanShared";
 import { LoanSubNav } from "./LoanSubNav";
 import { NewLoanApplicationDialog } from "@/components/loans/NewLoanApplicationDialog";
+import { loansAPI } from "@/services/loans/loansAPI";
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function text(v: unknown, fallback = ""): string {
+  if (typeof v === "string") return v;
+  if (typeof v === "number") return String(v);
+  return fallback;
+}
+
+function formatCurrencyK(amount: number): string {
+  if (amount >= 1_000_000) return `GH₵ ${(amount / 1_000_000).toFixed(1)}M`;
+  if (amount >= 1_000) return `GH₵ ${(amount / 1_000).toFixed(1)}K`;
+  return `GH₵ ${amount.toLocaleString("en-GH")}`;
+}
+
+function formatCurrencyFull(amount: number): string {
+  return `GH₵ ${amount.toLocaleString("en-GH", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+}
+
+function getInitials(name: string): string {
+  const parts = name.trim().split(" ").filter(Boolean);
+  if (parts.length === 0) return "NA";
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+const COLORS = ["#0A2F6D", "#B45309", "#059669", "#7C3AED", "#DC2626", "#0891B2"];
+function getColor(id: unknown): string {
+  const num = typeof id === "number" ? id : parseInt(String(id), 10) || 0;
+  return COLORS[Math.abs(num) % COLORS.length];
+}
+
+function extractLoans(data: unknown): Record<string, unknown>[] {
+  if (Array.isArray(data)) return data as Record<string, unknown>[];
+  if (data && typeof data === "object") {
+    const d = data as Record<string, unknown>;
+    if (Array.isArray(d.pageItems)) return d.pageItems as Record<string, unknown>[];
+    if (Array.isArray(d.content)) return d.content as Record<string, unknown>[];
+    if (Array.isArray(d.data)) return d.data as Record<string, unknown>[];
+  }
+  return [];
+}
+
+function getStatusId(loan: Record<string, unknown>): number {
+  const s = loan.status as Record<string, unknown> | undefined;
+  return Number(s?.id ?? 0);
+}
+
+function getLoanStage(loan: Record<string, unknown>): string {
+  const id = getStatusId(loan);
+  if (id === 500) return "Rejected";
+  if (id === 200) return "Approved";
+  if (id === 300) return "To Disburse";
+  return "Submitted";
+}
+
+interface RecentApp {
+  id: string;
+  clientName: string;
+  initials: string;
+  color: string;
+  product: string;
+  amount: string;
+  stage: string;
+}
+
+function toRecentApp(loan: Record<string, unknown>): RecentApp {
+  const id = text(loan.accountNo) || `LN-${text(loan.id)}`;
+  const clientName = text(loan.clientName) || text(loan.clientDisplayName) || `Client #${text(loan.clientId)}`;
+  const initials = getInitials(clientName);
+  const color = getColor(loan.id);
+  const product = text(loan.loanProductName) || "—";
+  const principal = Number(loan.principal ?? 0);
+  const amount = formatCurrencyFull(principal);
+  const stage = getLoanStage(loan);
+  return { id, clientName, initials, color, product, amount, stage };
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 export default function LoanOverviewPage() {
   const navigate = useNavigate();
   const [showDialog, setShowDialog] = useState(false);
+
+  const [allLoans, setAllLoans] = useState<Record<string, unknown>[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loansAPI
+      .getApplications({ limit: 500, offset: 0 }, { _skipAuthRedirect: true })
+      .then((res) => setAllLoans(extractLoans(res.data)))
+      .catch(() => setAllLoans([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // ── Derived stats ──────────────────────────────────────────────────────────
+  const activeLoans   = allLoans.filter((l) => getStatusId(l) === 300);
+  const pendingDisb   = allLoans.filter((l) => getStatusId(l) === 200);
+  const submittedLoans = allLoans.filter((l) => getStatusId(l) === 100);
+  const approvedLoans  = allLoans.filter((l) => getStatusId(l) === 200);
+  const rejectedLoans  = allLoans.filter((l) => getStatusId(l) === 500);
+
+  const totalOutstanding = activeLoans.reduce((sum, l) => {
+    const summary = l.summary as Record<string, unknown> | undefined;
+    return sum + Number(summary?.principalOutstanding ?? l.principalOutstanding ?? 0);
+  }, 0);
+
+  const pendingAmount = pendingDisb.reduce(
+    (sum, l) => sum + Number(l.approvedPrincipal ?? l.principal ?? 0),
+    0
+  );
+
+  const recentApps = allLoans.slice(0, 5).map(toRecentApp);
+
+  const pipeline = [
+    { label: "Submitted",    color: T.muted,  count: submittedLoans.length, amount: formatCurrencyK(submittedLoans.reduce((s,l) => s + Number(l.principal ?? 0), 0)) },
+    { label: "Under Review", color: T.blue,   count: 0,                     amount: "—" },
+    { label: "Approved",     color: T.amber,  count: approvedLoans.length,  amount: formatCurrencyK(approvedLoans.reduce((s,l) => s + Number(l.approvedPrincipal ?? l.principal ?? 0), 0)) },
+    { label: "To Disburse",  color: T.green,  count: pendingDisb.length,    amount: formatCurrencyK(pendingAmount) },
+    { label: "Rejected",     color: T.red,    count: rejectedLoans.length,  amount: formatCurrencyK(rejectedLoans.reduce((s,l) => s + Number(l.principal ?? 0), 0)) },
+  ];
 
   const stats = [
     {
@@ -33,8 +150,8 @@ export default function LoanOverviewPage() {
       iconBg: T.blueBg,
       iconColor: T.blue,
       label: "Active Loans",
-      value: "1,284",
-      meta: "GH₵ 18.4M out",
+      value: loading ? "…" : String(activeLoans.length),
+      meta: loading ? "" : formatCurrencyK(totalOutstanding) + " out",
       metaColor: T.muted,
     },
     {
@@ -42,46 +159,39 @@ export default function LoanOverviewPage() {
       iconBg: T.amberBg,
       iconColor: T.amber,
       label: "Pending Disb.",
-      value: "37",
-      meta: "GH₵ 2.1M",
+      value: loading ? "…" : String(pendingDisb.length),
+      meta: loading ? "" : formatCurrencyK(pendingAmount),
       metaColor: T.muted,
     },
     {
       icon: <AlertTriangle style={{ width: 16, height: 16 }} />,
       iconBg: T.redBg,
       iconColor: T.red,
-      label: "PAR (30+)",
-      value: "4.8%",
-      meta: "▲ 0.6%",
-      metaColor: T.red,
+      label: "Submitted",
+      value: loading ? "…" : String(submittedLoans.length),
+      meta: "Awaiting review",
+      metaColor: T.amber,
     },
     {
       icon: <TrendingUp style={{ width: 16, height: 16 }} />,
       iconBg: T.purpleBg,
       iconColor: T.purple,
-      label: "Arrears",
-      value: "GH₵ 612K",
-      meta: "92 loans",
+      label: "Total Applications",
+      value: loading ? "…" : String(allLoans.length),
+      meta: `${rejectedLoans.length} rejected`,
       metaColor: T.muted,
     },
     {
       icon: <BarChart2 style={{ width: 16, height: 16 }} />,
       iconBg: T.greenBg,
       iconColor: T.green,
-      label: "Collections",
-      value: "GH₵ 3.2M",
-      meta: "▲ 91%",
+      label: "Approved",
+      value: loading ? "…" : String(approvedLoans.length),
+      meta: "Ready to disburse",
       metaColor: T.green,
     },
   ];
-  const pipeline = [
-    { label: "Submitted", color: T.muted, count: 24, amount: "GH₵ 1.9M" },
-    { label: "Under Review", color: T.blue, count: 12, amount: "GH₵ 980K" },
-    { label: "Approved", color: T.amber, count: 9, amount: "GH₵ 720K" },
-    { label: "To Disburse", color: T.green, count: 5, amount: "GH₵ 410K" },
-    { label: "Rejected", color: T.red, count: 3, amount: "GH₵ 240K" },
-  ];
-  const recentApps = mockApplications.slice(0, 3);
+
   const aging = [
     { label: "1–30 days", amount: "GH₵ 248K", pct: 62, color: T.amber },
     { label: "31–60 days", amount: "GH₵ 190K", pct: 46, color: "#E07B39" },
@@ -188,38 +298,9 @@ export default function LoanOverviewPage() {
               >
                 {s.icon}
               </div>
-              <div
-                style={{
-                  fontSize: 12,
-                  color: T.muted,
-                  fontWeight: 600,
-                  fontFamily: "'DM Sans',sans-serif",
-                }}
-              >
-                {s.label}
-              </div>
-              <div
-                style={{
-                  fontSize: 22,
-                  fontWeight: 800,
-                  letterSpacing: "-0.02em",
-                  color: T.ink,
-                  fontFamily: "'Sora',sans-serif",
-                  lineHeight: 1,
-                }}
-              >
-                {s.value}
-              </div>
-              <div
-                style={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: s.metaColor,
-                  fontFamily: "'DM Sans',sans-serif",
-                }}
-              >
-                {s.meta}
-              </div>
+              <div style={{ fontSize: 12, color: T.muted, fontWeight: 600, fontFamily: "'DM Sans',sans-serif" }}>{s.label}</div>
+              <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", color: T.ink, fontFamily: "'Sora',sans-serif", lineHeight: 1 }}>{s.value}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: s.metaColor, fontFamily: "'DM Sans',sans-serif" }}>{s.meta}</div>
             </div>
           ))}
         </div>
@@ -231,83 +312,24 @@ export default function LoanOverviewPage() {
             action={
               <button
                 onClick={() => navigate("/loans/applications")}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: T.blue,
-                  fontSize: 13,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  fontFamily: "'DM Sans',sans-serif",
-                }}
+                style={{ background: "none", border: "none", color: T.blue, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}
               >
                 View board →
               </button>
             }
           />
-          <div
-            style={{
-              display: "flex",
-              gap: 10,
-              padding: "16px 20px",
-              flexWrap: "wrap",
-            }}
-          >
+          <div style={{ display: "flex", gap: 10, padding: "16px 20px", flexWrap: "wrap" }}>
             {pipeline.map((p) => (
-              <div
-                key={p.label}
-                style={{
-                  flex: 1,
-                  minWidth: 100,
-                  border: `1px solid ${T.border}`,
-                  borderRadius: 11,
-                  padding: 14,
-                }}
-              >
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: T.muted,
-                    fontWeight: 600,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    fontFamily: "'DM Sans',sans-serif",
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 7,
-                      height: 7,
-                      borderRadius: "50%",
-                      background: p.color,
-                      display: "inline-block",
-                      flexShrink: 0,
-                    }}
-                  />
+              <div key={p.label} style={{ flex: 1, minWidth: 100, border: `1px solid ${T.border}`, borderRadius: 11, padding: 14 }}>
+                <div style={{ fontSize: 12, color: T.muted, fontWeight: 600, display: "flex", alignItems: "center", gap: 6, fontFamily: "'DM Sans',sans-serif" }}>
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: p.color, display: "inline-block", flexShrink: 0 }} />
                   {p.label}
                 </div>
-                <div
-                  style={{
-                    fontSize: 22,
-                    fontWeight: 800,
-                    marginTop: 7,
-                    color: T.ink,
-                    fontFamily: "'Sora',sans-serif",
-                  }}
-                >
-                  {p.count}
+                <div style={{ fontSize: 22, fontWeight: 800, marginTop: 7, color: T.ink, fontFamily: "'Sora',sans-serif" }}>
+                  {loading ? "…" : p.count}
                 </div>
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: T.muted,
-                    fontWeight: 600,
-                    marginTop: 2,
-                    fontFamily: "'DM Sans',sans-serif",
-                  }}
-                >
-                  {p.amount}
+                <div style={{ fontSize: 12, color: T.muted, fontWeight: 600, marginTop: 2, fontFamily: "'DM Sans',sans-serif" }}>
+                  {loading ? "" : p.amount}
                 </div>
               </div>
             ))}
@@ -315,70 +337,48 @@ export default function LoanOverviewPage() {
         </Panel>
 
         {/* Recent Apps + Arrears Aging */}
-        <div
-          style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 18 }}
-        >
+        <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 18 }}>
           <Panel>
             <PanelHead
               title="Recent Applications"
               action={
                 <button
                   onClick={() => navigate("/loans/applications")}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: T.blue,
-                    fontSize: 13,
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    fontFamily: "'DM Sans',sans-serif",
-                  }}
+                  style={{ background: "none", border: "none", color: T.blue, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}
                 >
                   See all →
                 </button>
               }
             />
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  {["Applicant", "Product", "Amount", "Status"].map((h) => (
-                    <th key={h} style={thStyle}>
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {recentApps.map((a) => (
-                  <tr key={a.id}>
-                    <td style={tdStyle}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 10,
-                        }}
-                      >
-                        <Ava initials={a.initials} color={a.color} />
-                        <div>
-                          <div style={{ fontWeight: 700, fontSize: 13 }}>
-                            {a.clientName}
-                          </div>
-                          <div style={{ fontSize: 11, color: T.muted }}>
-                            {a.id}
+            {loading ? (
+              <div style={{ padding: 30, textAlign: "center", color: T.muted, fontSize: 13, fontFamily: "'DM Sans',sans-serif" }}>Loading…</div>
+            ) : recentApps.length === 0 ? (
+              <div style={{ padding: 30, textAlign: "center", color: T.muted, fontSize: 13, fontFamily: "'DM Sans',sans-serif" }}>No applications yet.</div>
+            ) : (
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr>{["Applicant", "Product", "Amount", "Status"].map((h) => <th key={h} style={thStyle}>{h}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {recentApps.map((a) => (
+                    <tr key={a.id}>
+                      <td style={tdStyle}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <Ava initials={a.initials} color={a.color} />
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: 13 }}>{a.clientName}</div>
+                            <div style={{ fontSize: 11, color: T.muted }}>{a.id}</div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td style={tdStyle}>{a.product}</td>
-                    <td style={{ ...tdStyle, fontWeight: 700 }}>{a.amount}</td>
-                    <td style={tdStyle}>
-                      <StatusBadge status={a.stage} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      </td>
+                      <td style={tdStyle}>{a.product}</td>
+                      <td style={{ ...tdStyle, fontWeight: 700 }}>{a.amount}</td>
+                      <td style={tdStyle}><StatusBadge status={a.stage} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </Panel>
 
           <Panel>
@@ -387,61 +387,21 @@ export default function LoanOverviewPage() {
               action={
                 <button
                   onClick={() => navigate("/loans/arrears")}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: T.blue,
-                    fontSize: 13,
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    fontFamily: "'DM Sans',sans-serif",
-                  }}
+                  style={{ background: "none", border: "none", color: T.blue, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}
                 >
                   PAR report →
                 </button>
               }
             />
-            <div
-              style={{
-                padding: "16px 20px",
-                display: "flex",
-                flexDirection: "column",
-                gap: 14,
-              }}
-            >
+            <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
               {aging.map((a) => (
-                <div
-                  key={a.label}
-                  style={{ display: "flex", flexDirection: "column", gap: 6 }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      fontFamily: "'DM Sans',sans-serif",
-                    }}
-                  >
+                <div key={a.label} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 600, fontFamily: "'DM Sans',sans-serif" }}>
                     <span style={{ color: T.ink }}>{a.label}</span>
                     <span style={{ color: T.muted }}>{a.amount}</span>
                   </div>
-                  <div
-                    style={{
-                      height: 7,
-                      background: "#EEF1F6",
-                      borderRadius: 20,
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "100%",
-                        width: `${a.pct}%`,
-                        background: a.color,
-                        borderRadius: 20,
-                      }}
-                    />
+                  <div style={{ height: 7, background: "#EEF1F6", borderRadius: 20, overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${a.pct}%`, background: a.color, borderRadius: 20 }} />
                   </div>
                 </div>
               ))}
@@ -449,10 +409,8 @@ export default function LoanOverviewPage() {
           </Panel>
         </div>
       </div>
-      <NewLoanApplicationDialog
-        open={showDialog}
-        onOpenChange={setShowDialog}
-      />
+
+      <NewLoanApplicationDialog open={showDialog} onOpenChange={setShowDialog} />
     </div>
   );
 }
