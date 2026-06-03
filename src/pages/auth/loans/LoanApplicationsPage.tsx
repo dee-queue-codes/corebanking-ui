@@ -150,7 +150,7 @@ export default function LoanApplicationsPage() {
   const loadLoans = () => {
     setLoading(true)
     setLoadError('')
-    loansAPI.getApplications({ limit: 200, offset: 0 }, { _skipAuthRedirect: true })
+    loansAPI.getApplications({}, { _skipAuthRedirect: true })
       .then(res => {
         const raw = extractLoans(res.data)
         setLoans(raw.map(toLoanDisplay))

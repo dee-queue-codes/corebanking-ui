@@ -11,7 +11,7 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ['clifton-fibromatous-candelaria.ngrok-free.dev'],
+    allowedHosts: ['9821-156-0-234-2.ngrok-free.app'],
     port: 3000,
   },
 })

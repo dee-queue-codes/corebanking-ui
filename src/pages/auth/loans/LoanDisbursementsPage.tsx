@@ -94,12 +94,10 @@ export default function LoanDisbursementsPage() {
   const loadData = useCallback(() => {
     setLoading(true)
     setLoadError('')
-    loansAPI.getApplications({ limit: 200, offset: 0 }, { _skipAuthRedirect: true })
+    loansAPI.getDisbursements({}, { _skipAuthRedirect: true })
       .then(res => {
         const raw = extractLoans(res.data)
-        // Show submitted (100), approved (200), and recently active (300) loans
-        const filtered = raw.filter(l => [100, 200, 300].includes(getStatusId(l)))
-        setItems(filtered.map(toLoanDisbursement))
+        setItems(raw.map(toLoanDisbursement))
       })
       .catch(() => setLoadError('Could not load disbursements.'))
       .finally(() => setLoading(false))

@@ -90,7 +90,7 @@ export default function LoanApprovalsPage() {
   const loadData = useCallback(() => {
     setLoading(true)
     setLoadError('')
-    loansAPI.getApplications({ limit: 200, offset: 0 }, { _skipAuthRedirect: true })
+    loansAPI.getApplications({}, { _skipAuthRedirect: true })
       .then(res => {
         const raw = extractLoans(res.data)
         setItems(raw.map(toApprovalItem))

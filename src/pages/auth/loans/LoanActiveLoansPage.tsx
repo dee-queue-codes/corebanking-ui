@@ -157,7 +157,7 @@ function LoanDetailView({ loan, onBack }: { loan: ActiveLoan; onBack: () => void
 
   useEffect(() => {
     setScheduleLoading(true)
-    const loanId = loan.id.replace('LN-', '')
+    const loanId = loan.id.replace(/^LN-/, '')
     loansAPI.getRepaymentSchedule(loanId, { _skipAuthRedirect: true })
       .then(res => setSchedule(extractSchedule(res.data)))
       .catch(() => setSchedule([]))
@@ -261,7 +261,7 @@ export default function LoanActiveLoansPage() {
   useEffect(() => {
     setLoading(true)
     setLoadError('')
-    loansAPI.getApplications({ loanStatus: 'active', limit: 200, offset: 0 }, { _skipAuthRedirect: true })
+    loansAPI.getActive({}, { _skipAuthRedirect: true })
       .then(res => {
         const raw = extractLoans(res.data)
         setLoans(raw.map(toLoanActive))

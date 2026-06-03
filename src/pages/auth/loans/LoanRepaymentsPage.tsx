@@ -96,20 +96,15 @@ export default function LoanRepaymentsPage() {
       .then(res => {
         const txns = extractTransactions(res.data)
         const repayments = txns
-          .filter(t => {
-            const type = (t.type as Record<string, unknown> | undefined)
-            return String(type?.code ?? '').toLowerCase().includes('repayment')
-              || String(type?.value ?? '').toLowerCase().includes('repayment')
-          })
           .slice(0, 10)
-          .map(t => ({
-            id: t.id as string | number,
+          .map((t, i) => ({
+            id: (t.id as string | number) ?? i,
             clientName: resolvedLoanLabel.split('·')[0]?.trim() || 'Client',
             initials: getInitials(resolvedLoanLabel.split('·')[0]?.trim() || 'CL'),
-            color: getColor(t.id),
-            method: 'Bank',
-            date: formatDateShort(t.date),
-            amount: `GH₵ ${Number(t.amount ?? 0).toLocaleString('en-GH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+            color: getColor(t.id ?? i),
+            method: text(t.paymentMethod ?? t.paymentType ?? 'Bank'),
+            date: formatDateShort(t.date ?? t.transactionDate),
+            amount: `GH₵ ${Number(t.amount ?? t.transactionAmount ?? 0).toLocaleString('en-GH', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
           }))
         setRecent(repayments)
       })
@@ -163,12 +158,12 @@ export default function LoanRepaymentsPage() {
     setSubmitMsg('')
     try {
       await loansAPI.makeRepayment(resolvedLoanId, {
-        locale: 'en',
-        dateFormat: 'dd MMMM yyyy',
         transactionDate: formatLoanDate(valueDate),
         transactionAmount: Number(amount),
-        paymentTypeId: PAYMENT_METHODS.indexOf(paymentMethod) + 1,
+        paymentMethod: paymentMethod,
         note: `Payment via ${paymentMethod}`,
+        locale: 'en',
+        dateFormat: 'dd MMMM yyyy',
       }, { _skipAuthRedirect: true })
       setSubmitMsg('Repayment posted successfully!')
       setAmount('')

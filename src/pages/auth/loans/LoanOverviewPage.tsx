@@ -111,9 +111,25 @@ export default function LoanOverviewPage() {
 
   useEffect(() => {
     loansAPI
-      .getApplications({ limit: 500, offset: 0 }, { _skipAuthRedirect: true })
-      .then((res) => setAllLoans(extractLoans(res.data)))
-      .catch(() => setAllLoans([]))
+      .getOverview({ _skipAuthRedirect: true })
+      .then((res) => {
+        // If overview returns structured data, use it; else fall back to applications list
+        const raw = res.data as unknown
+        if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+          const d = raw as Record<string, unknown>
+          // Try to extract a loans array from the overview response
+          const arr = extractLoans(d.loans ?? d.applications ?? d.data ?? d)
+          if (arr.length > 0) { setAllLoans(arr); setLoading(false); return }
+        }
+        // Fall back to applications list
+        return loansAPI.getApplications({}, { _skipAuthRedirect: true })
+          .then(r => setAllLoans(extractLoans(r.data)))
+      })
+      .catch(() =>
+        loansAPI.getApplications({}, { _skipAuthRedirect: true })
+          .then(r => setAllLoans(extractLoans(r.data)))
+          .catch(() => setAllLoans([]))
+      )
       .finally(() => setLoading(false));
   }, []);
 
